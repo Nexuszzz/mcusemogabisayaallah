@@ -23,14 +23,18 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
-# .env  # USER REQUESTED: Push .env files to GitHub
-# .env.local
-# .env.production
-# .env.*.local
-# .env.backup
-# *.env.backup
-# proxy-server/.env
-# whatsapp-server/.env
-# voice-call-server/.env
-# voice-call-server/.env.backup
+# Environment variables - PROTECT API KEYS!
+.env
+.env.local
+.env.production
+.env.*.local
+.env.backup
+*.env.backup
+proxy-server/.env
+whatsapp-server/.env
+voice-call-server/.env
+python_scripts/.env
+python_scripts/.env.production
+
+# Keep only .env.example files
+!**/.env.example

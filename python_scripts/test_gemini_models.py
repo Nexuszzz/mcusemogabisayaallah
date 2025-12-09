@@ -1,7 +1,14 @@
 """Test all available Gemini models to find which one has quota"""
 import requests
+import os
+from dotenv import load_dotenv
 
-API_KEY = "AIzaSyAGX6tPV18q3xaVMsu2wSeJ6_8TcJapFm0"
+load_dotenv()
+API_KEY = os.getenv("GOOGLE_API_KEY")
+if not API_KEY:
+    print("❌ ERROR: GOOGLE_API_KEY not found in environment variables!")
+    print("   Please set GOOGLE_API_KEY in .env file")
+    exit(1)
 
 models = [
     # Latest generation (2025)

@@ -95,7 +95,8 @@ cap = cv2.VideoCapture(STREAM_URL)
 # Environment variables untuk production
 
 # Google Gemini API
-GOOGLE_API_KEY=AIzaSyAGX6tPV18q3xaVMsu2wSeJ6_8TcJapFm0
+# GET YOUR API KEY: https://makersuite.google.com/app/apikey
+GOOGLE_API_KEY=YOUR_GEMINI_API_KEY_HERE
 
 # EC2 Server URLs (ganti YOUR_EC2_IP)
 UPLOAD_API=http://YOUR_EC2_IP:8080/api/video/upload

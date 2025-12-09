@@ -119,7 +119,11 @@ FALLBACK_CONF_THRESHOLD = 0.80  # Very high confidence required for YOLO-only (w
 
 # Gemini Configuration
 GEMINI_MODEL = "gemini-2.5-flash-lite"  # Lighter model with more quota available
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY", "AIzaSyAGX6tPV18q3xaVMsu2wSeJ6_8TcJapFm0")
+GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
+if not GEMINI_API_KEY:
+    print("❌ ERROR: GOOGLE_API_KEY not found in environment variables!")
+    print("   Please set GOOGLE_API_KEY in .env file or environment")
+    exit(1)
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 # Video Recording Configuration

@@ -156,22 +156,83 @@ export default function WhatsAppIntegration() {
     return () => clearInterval(interval);
   }, [checkConnectionStatus]);
 
-  // Load recipients from localStorage
+  // Load recipients from server on mount
   useEffect(() => {
-    const saved = localStorage.getItem('gowa_recipients');
-    if (saved) {
+    async function loadRecipientsFromServer() {
       try {
-        setRecipients(JSON.parse(saved));
+        const res = await fetch(`${getProxyApiUrl()}/api/recipients`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.recipients?.length > 0) {
+            // Convert server format to frontend format
+            const converted = data.recipients.map((r: { id: string; phone: string; name: string; enabled: boolean; createdAt: string }) => ({
+              id: r.id,
+              phoneNumber: r.phone,
+              name: r.name,
+              addedAt: new Date(r.createdAt).getTime(),
+              enabled: r.enabled
+            }));
+            setRecipients(converted);
+            localStorage.setItem('gowa_recipients', JSON.stringify(converted));
+            console.log(`✅ Loaded ${converted.length} recipients from server`);
+          }
+        }
       } catch (e) {
-        console.error('Failed to load recipients:', e);
+        console.log('Failed to load from server, using localStorage');
+        // Fallback to localStorage
+        const saved = localStorage.getItem('gowa_recipients');
+        if (saved) {
+          try {
+            setRecipients(JSON.parse(saved));
+          } catch (err) {
+            console.error('Failed to load recipients:', err);
+          }
+        }
       }
     }
+    loadRecipientsFromServer();
   }, []);
 
-  // Save recipients to localStorage
-  const saveRecipients = (newRecipients: Recipient[]) => {
+  // Helper function to get proxy API URL
+  function getProxyApiUrl(): string {
+    if (typeof window === 'undefined') return 'http://localhost:8080';
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8080';
+    }
+    if (hostname === 'latom.flx.web.id') {
+      return 'https://api.latom.flx.web.id';
+    }
+    return 'http://3.27.0.139:8080';
+  }
+
+  // Save recipients to localStorage AND sync to server
+  const saveRecipients = async (newRecipients: Recipient[]) => {
     localStorage.setItem('gowa_recipients', JSON.stringify(newRecipients));
     setRecipients(newRecipients);
+    
+    // Sync to server for auto-notification
+    try {
+      const serverFormat = newRecipients.map(r => ({
+        id: r.id,
+        name: r.name,
+        phone: r.phoneNumber,
+        enabled: true,
+        createdAt: new Date(r.addedAt).toISOString()
+      }));
+      
+      const res = await fetch(`${getProxyApiUrl()}/api/recipients/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipients: serverFormat })
+      });
+      
+      if (res.ok) {
+        console.log('✅ Recipients synced to server for auto-notification');
+      }
+    } catch (e) {
+      console.warn('Failed to sync recipients to server:', e);
+    }
   };
 
   // Login with QR Code

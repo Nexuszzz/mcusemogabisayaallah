@@ -33,6 +33,215 @@ const TOPIC_STREAM = process.env.TOPIC_STREAM || 'lab/zaks/stream'
 const TOPIC_ESP32CAM_IP = process.env.TOPIC_ESP32CAM_IP || 'lab/zaks/esp32cam/ip'
 const TOPIC_ALL = 'lab/zaks/#'
 
+// ================================================================================
+// GOWA (GO-WHATSAPP) AUTO NOTIFICATION SYSTEM
+// ================================================================================
+const GOWA_SERVER_URL = process.env.GOWA_SERVER_URL || 'http://localhost:3000'
+const RECIPIENTS_FILE = path.join(__dirname, 'whatsapp-recipients.json')
+const GAS_DANGER_THRESHOLD = 4095  // ADC max = bahaya gas
+const NOTIFICATION_COOLDOWN = 60000  // 60 detik cooldown antara notifikasi
+
+// In-memory recipients storage
+let whatsappRecipients = []
+let lastNotificationTime = 0
+let notificationStats = {
+  totalSent: 0,
+  lastSent: null,
+  failures: []
+}
+
+// Load recipients from file
+function loadRecipients() {
+  try {
+    if (fs.existsSync(RECIPIENTS_FILE)) {
+      const data = fs.readFileSync(RECIPIENTS_FILE, 'utf8')
+      whatsappRecipients = JSON.parse(data)
+      console.log(`📱 Loaded ${whatsappRecipients.length} WhatsApp recipients`)
+    }
+  } catch (error) {
+    console.error('❌ Failed to load recipients:', error.message)
+    whatsappRecipients = []
+  }
+}
+
+// Save recipients to file
+function saveRecipients() {
+  try {
+    fs.writeFileSync(RECIPIENTS_FILE, JSON.stringify(whatsappRecipients, null, 2))
+    console.log(`💾 Saved ${whatsappRecipients.length} recipients to file`)
+  } catch (error) {
+    console.error('❌ Failed to save recipients:', error.message)
+  }
+}
+
+// Send WhatsApp notification via GOWA
+async function sendGowaNotification(message, alertType = 'general') {
+  const now = Date.now()
+  
+  // Check cooldown
+  if (now - lastNotificationTime < NOTIFICATION_COOLDOWN) {
+    console.log(`⏳ Notification cooldown active (${Math.round((NOTIFICATION_COOLDOWN - (now - lastNotificationTime)) / 1000)}s remaining)`)
+    return { success: false, reason: 'cooldown' }
+  }
+  
+  if (whatsappRecipients.length === 0) {
+    console.log('⚠️ No WhatsApp recipients configured')
+    return { success: false, reason: 'no_recipients' }
+  }
+  
+  const results = []
+  lastNotificationTime = now
+  
+  for (const recipient of whatsappRecipients) {
+    if (!recipient.enabled) continue
+    
+    // Format phone number (ensure 628xxx format)
+    let phone = recipient.phone.replace(/[^0-9]/g, '')
+    if (phone.startsWith('0')) {
+      phone = '62' + phone.substring(1)
+    }
+    if (!phone.startsWith('62')) {
+      phone = '62' + phone
+    }
+    
+    try {
+      console.log(`📤 Sending ${alertType} alert to ${recipient.name} (${phone})...`)
+      
+      const response = await fetch(`${GOWA_SERVER_URL}/send/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: phone,
+          message: message
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        console.log(`✅ Sent to ${recipient.name}: ${data.message || 'OK'}`)
+        results.push({ phone, name: recipient.name, success: true })
+        notificationStats.totalSent++
+        notificationStats.lastSent = new Date().toISOString()
+      } else {
+        console.error(`❌ Failed to send to ${recipient.name}:`, data)
+        results.push({ phone, name: recipient.name, success: false, error: data })
+        notificationStats.failures.push({
+          phone,
+          error: data.message || 'Unknown error',
+          timestamp: new Date().toISOString()
+        })
+      }
+    } catch (error) {
+      console.error(`❌ Error sending to ${recipient.name}:`, error.message)
+      results.push({ phone, name: recipient.name, success: false, error: error.message })
+    }
+    
+    // Small delay between messages to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
+  
+  return { success: true, results }
+}
+
+// Create alert message based on type
+function createAlertMessage(alertType, data) {
+  const timestamp = new Date().toLocaleString('id-ID', { 
+    timeZone: 'Asia/Jakarta',
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  })
+  
+  switch (alertType) {
+    case 'fire':
+      return `🔥 *PERINGATAN KEBAKARAN!*\n\n` +
+             `⚠️ Sensor mendeteksi api!\n\n` +
+             `📍 Lokasi: Lab IoT\n` +
+             `📅 Waktu: ${timestamp}\n` +
+             `🔢 Device: ${data.deviceId || 'ESP32'}\n\n` +
+             `_Segera periksa lokasi dan ambil tindakan!_\n\n` +
+             `🤖 _Pesan otomatis dari Fire Detection System_`
+    
+    case 'gas':
+      return `⚠️ *PERINGATAN KEBOCORAN GAS!*\n\n` +
+             `💨 Level gas BERBAHAYA terdeteksi!\n\n` +
+             `📊 Level: ${data.gasValue || 4095} ADC (MAX)\n` +
+             `📍 Lokasi: Lab IoT\n` +
+             `📅 Waktu: ${timestamp}\n` +
+             `🔢 Device: ${data.deviceId || 'ESP32'}\n\n` +
+             `⚡ _Tindakan: Segera ventilasi area dan matikan sumber gas!_\n\n` +
+             `🤖 _Pesan otomatis dari Fire Detection System_`
+    
+    case 'fire_camera':
+      return `🔥 *KEBAKARAN TERDETEKSI - AI VISION!*\n\n` +
+             `📸 Kamera ESP32-CAM mendeteksi api!\n\n` +
+             `📊 Confidence: ${((data.confidence || 0) * 100).toFixed(0)}%\n` +
+             `📍 Camera: ${data.cameraIp || 'Unknown'}\n` +
+             `📅 Waktu: ${timestamp}\n\n` +
+             `${data.geminiVerified ? '✅ Terverifikasi Gemini AI' : '⚠️ Belum diverifikasi AI'}\n\n` +
+             `_Segera periksa lokasi!_\n\n` +
+             `🤖 _Pesan otomatis dari AI Fire Detection System_`
+    
+    default:
+      return `⚠️ *ALERT: ${alertType.toUpperCase()}*\n\n` +
+             `📅 Waktu: ${timestamp}\n` +
+             `📊 Data: ${JSON.stringify(data, null, 2)}\n\n` +
+             `🤖 _Pesan otomatis dari Fire Detection System_`
+  }
+}
+
+// Process MQTT event for alerts
+async function processAlertEvent(topic, payload) {
+  try {
+    let data
+    try {
+      data = JSON.parse(payload)
+    } catch {
+      data = { raw: payload }
+    }
+    
+    console.log(`🔍 Processing alert event from ${topic}:`, data)
+    
+    // Check for fire detection event
+    if (data.event === 'flame_on' || data.type === 'fire' || data.flame === true) {
+      console.log('🔥 FIRE DETECTED! Sending notifications...')
+      const message = createAlertMessage('fire', { deviceId: data.id || data.deviceId })
+      await sendGowaNotification(message, 'fire')
+      return
+    }
+    
+    // Check for gas leak (gasA >= 4095)
+    if (data.gasA !== undefined && data.gasA >= GAS_DANGER_THRESHOLD) {
+      console.log(`💨 GAS DANGER! Level: ${data.gasA} (threshold: ${GAS_DANGER_THRESHOLD})`)
+      const message = createAlertMessage('gas', { gasValue: data.gasA, deviceId: data.id })
+      await sendGowaNotification(message, 'gas')
+      return
+    }
+    
+    // Check for alarm state
+    if (data.alarm === true || data.alarm === 1) {
+      console.log('🚨 ALARM TRIGGERED! Checking reason...')
+      if (data.gasA && data.gasA >= GAS_DANGER_THRESHOLD) {
+        const message = createAlertMessage('gas', { gasValue: data.gasA, deviceId: data.id })
+        await sendGowaNotification(message, 'gas')
+      } else {
+        const message = createAlertMessage('fire', { deviceId: data.id })
+        await sendGowaNotification(message, 'fire')
+      }
+      return
+    }
+    
+  } catch (error) {
+    console.error('❌ Error processing alert event:', error.message)
+  }
+}
+
+// Initialize recipients on startup
+loadRecipients()
+
+// ================================================================================
+
+
 // Create Express app
 const app = express()
 
@@ -118,7 +327,7 @@ app.use('/api/auth', authRoutes)
 // GitHub: https://github.com/aldinokemal/go-whatsapp-web-multidevice
 // ================================================================================
 
-const GOWA_SERVER_URL = process.env.GOWA_SERVER_URL || 'http://localhost:3000'
+// GOWA_SERVER_URL already defined above in auto notification section
 
 // Helper function to proxy requests with support for multipart
 async function proxyRequest(targetUrl, req, res, options = {}) {
@@ -267,6 +476,258 @@ app.all('/gowa/*', async (req, res) => {
   const targetUrl = `${GOWA_SERVER_URL}${path}${queryString ? '?' + queryString : ''}`
   console.log(`📱 Proxying GOWA request: ${req.method} ${targetUrl}`)
   await proxyRequest(targetUrl, req, res)
+})
+
+// ================================================================================
+// WHATSAPP RECIPIENTS MANAGEMENT API
+// These endpoints manage notification recipients stored on server
+// ================================================================================
+
+// Get all recipients
+app.get('/api/recipients', (req, res) => {
+  res.json({
+    success: true,
+    recipients: whatsappRecipients,
+    stats: notificationStats
+  })
+})
+
+// Add new recipient
+app.post('/api/recipients', (req, res) => {
+  const { name, phone, enabled = true } = req.body
+  
+  if (!name || !phone) {
+    return res.status(400).json({
+      success: false,
+      error: 'Name and phone are required'
+    })
+  }
+  
+  // Validate phone format
+  const cleanPhone = phone.replace(/[^0-9]/g, '')
+  if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid phone number format'
+    })
+  }
+  
+  // Check for duplicates
+  const exists = whatsappRecipients.find(r => 
+    r.phone.replace(/[^0-9]/g, '') === cleanPhone
+  )
+  if (exists) {
+    return res.status(409).json({
+      success: false,
+      error: 'Phone number already registered'
+    })
+  }
+  
+  const recipient = {
+    id: `rec_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    name,
+    phone: cleanPhone,
+    enabled,
+    createdAt: new Date().toISOString()
+  }
+  
+  whatsappRecipients.push(recipient)
+  saveRecipients()
+  
+  console.log(`📱 Added recipient: ${name} (${phone})`)
+  
+  res.json({
+    success: true,
+    recipient,
+    message: 'Recipient added successfully'
+  })
+})
+
+// Update recipient
+app.put('/api/recipients/:id', (req, res) => {
+  const { id } = req.params
+  const { name, phone, enabled } = req.body
+  
+  const index = whatsappRecipients.findIndex(r => r.id === id)
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      error: 'Recipient not found'
+    })
+  }
+  
+  if (name) whatsappRecipients[index].name = name
+  if (phone) whatsappRecipients[index].phone = phone.replace(/[^0-9]/g, '')
+  if (enabled !== undefined) whatsappRecipients[index].enabled = enabled
+  whatsappRecipients[index].updatedAt = new Date().toISOString()
+  
+  saveRecipients()
+  
+  res.json({
+    success: true,
+    recipient: whatsappRecipients[index],
+    message: 'Recipient updated successfully'
+  })
+})
+
+// Delete recipient
+app.delete('/api/recipients/:id', (req, res) => {
+  const { id } = req.params
+  const index = whatsappRecipients.findIndex(r => r.id === id)
+  
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      error: 'Recipient not found'
+    })
+  }
+  
+  const removed = whatsappRecipients.splice(index, 1)[0]
+  saveRecipients()
+  
+  console.log(`🗑️ Removed recipient: ${removed.name}`)
+  
+  res.json({
+    success: true,
+    message: 'Recipient deleted successfully'
+  })
+})
+
+// Toggle recipient enabled status
+app.patch('/api/recipients/:id/toggle', (req, res) => {
+  const { id } = req.params
+  const recipient = whatsappRecipients.find(r => r.id === id)
+  
+  if (!recipient) {
+    return res.status(404).json({
+      success: false,
+      error: 'Recipient not found'
+    })
+  }
+  
+  recipient.enabled = !recipient.enabled
+  recipient.updatedAt = new Date().toISOString()
+  saveRecipients()
+  
+  res.json({
+    success: true,
+    recipient,
+    message: `Recipient ${recipient.enabled ? 'enabled' : 'disabled'}`
+  })
+})
+
+// Sync recipients from frontend (bulk update)
+app.post('/api/recipients/sync', (req, res) => {
+  const { recipients: newRecipients } = req.body
+  
+  if (!Array.isArray(newRecipients)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Recipients must be an array'
+    })
+  }
+  
+  // Validate and transform recipients
+  const validRecipients = newRecipients.map((r, index) => ({
+    id: r.id || `rec_${Date.now()}_${index}`,
+    name: r.name || `Recipient ${index + 1}`,
+    phone: (r.phone || r.number || '').replace(/[^0-9]/g, ''),
+    enabled: r.enabled !== false,
+    createdAt: r.createdAt || new Date().toISOString()
+  })).filter(r => r.phone.length >= 10)
+  
+  whatsappRecipients = validRecipients
+  saveRecipients()
+  
+  console.log(`🔄 Synced ${validRecipients.length} recipients from frontend`)
+  
+  res.json({
+    success: true,
+    count: validRecipients.length,
+    recipients: validRecipients
+  })
+})
+
+// Test notification to specific recipient
+app.post('/api/recipients/:id/test', async (req, res) => {
+  const { id } = req.params
+  const recipient = whatsappRecipients.find(r => r.id === id)
+  
+  if (!recipient) {
+    return res.status(404).json({
+      success: false,
+      error: 'Recipient not found'
+    })
+  }
+  
+  // Format phone
+  let phone = recipient.phone.replace(/[^0-9]/g, '')
+  if (phone.startsWith('0')) phone = '62' + phone.substring(1)
+  if (!phone.startsWith('62')) phone = '62' + phone
+  
+  const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
+  const testMessage = `🧪 *TEST NOTIFIKASI*\n\n` +
+                     `Ini adalah pesan test dari Fire Detection System.\n\n` +
+                     `📱 Recipient: ${recipient.name}\n` +
+                     `📅 Waktu: ${timestamp}\n\n` +
+                     `✅ Jika Anda menerima pesan ini, sistem notifikasi berfungsi dengan baik!\n\n` +
+                     `🤖 _Pesan otomatis dari Fire Detection System_`
+  
+  try {
+    const response = await fetch(`${GOWA_SERVER_URL}/send/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, message: testMessage })
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      res.json({
+        success: true,
+        message: 'Test message sent successfully',
+        recipient: recipient.name
+      })
+    } else {
+      res.status(response.status).json({
+        success: false,
+        error: data.message || 'Failed to send test message',
+        details: data
+      })
+    }
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      error: `Failed to send: ${error.message}`
+    })
+  }
+})
+
+// Manual trigger alert (for testing)
+app.post('/api/alert/trigger', async (req, res) => {
+  const { type = 'fire', data = {} } = req.body
+  
+  console.log(`🔔 Manual alert trigger: ${type}`)
+  
+  const message = createAlertMessage(type, data)
+  const result = await sendGowaNotification(message, type)
+  
+  res.json({
+    success: result.success,
+    type,
+    result
+  })
+})
+
+// Get notification stats
+app.get('/api/notifications/stats', (req, res) => {
+  res.json({
+    success: true,
+    stats: notificationStats,
+    recipientCount: whatsappRecipients.length,
+    enabledCount: whatsappRecipients.filter(r => r.enabled).length,
+    cooldownRemaining: Math.max(0, NOTIFICATION_COOLDOWN - (Date.now() - lastNotificationTime))
+  })
 })
 
 // ================================================================================
@@ -675,6 +1136,55 @@ mqttClient.on('message', (topic, payload) => {
   }
 
   console.log(`📨 Received from MQTT: ${topic}`)
+  
+  // ================================================================================
+  // AUTO WHATSAPP NOTIFICATION ON FIRE/GAS EVENTS
+  // ================================================================================
+  
+  // Check for event topic (lab/zaks/event) - fire detection events
+  if (topic === TOPIC_EVENT || topic.includes('/event')) {
+    try {
+      const eventData = JSON.parse(payloadString)
+      console.log(`🔍 Event data:`, eventData)
+      
+      // Fire/flame detection
+      if (eventData.event === 'flame_on' || eventData.type === 'fire' || eventData.flame === true) {
+        console.log('🔥 FIRE EVENT DETECTED! Triggering WhatsApp notification...')
+        processAlertEvent(topic, payloadString)
+      }
+    } catch (e) {
+      // Not JSON, ignore
+    }
+  }
+  
+  // Check for log/telemetry topic (lab/zaks/log) - sensor data with gas readings
+  if (topic === TOPIC_LOG || topic.includes('/log')) {
+    try {
+      const telemetryData = JSON.parse(payloadString)
+      
+      // Check for dangerous gas level (4095 = ADC max = saturated/dangerous)
+      if (telemetryData.gasA !== undefined && telemetryData.gasA >= GAS_DANGER_THRESHOLD) {
+        console.log(`💨 DANGEROUS GAS LEVEL DETECTED! gasA=${telemetryData.gasA} (threshold=${GAS_DANGER_THRESHOLD})`)
+        processAlertEvent(topic, payloadString)
+      }
+      
+      // Check for alarm flag
+      if (telemetryData.alarm === true || telemetryData.alarm === 1) {
+        console.log('🚨 ALARM FLAG DETECTED in telemetry!')
+        processAlertEvent(topic, payloadString)
+      }
+    } catch (e) {
+      // Not JSON, ignore
+    }
+  }
+  
+  // Check for alert topic (lab/zaks/alert) - direct alerts
+  if (topic === TOPIC_ALERT || topic.includes('/alert')) {
+    console.log('🚨 ALERT TOPIC MESSAGE! Processing...')
+    processAlertEvent(topic, payloadString)
+  }
+  
+  // ================================================================================
   
   // Handle ESP32-CAM IP announcements
   if (topic === TOPIC_ESP32CAM_IP) {

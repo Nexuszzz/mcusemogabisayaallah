@@ -206,35 +206,6 @@ export default function WhatsAppIntegration() {
     return 'http://3.27.11.106:8080';
   }
 
-  // Save recipients to localStorage AND sync to server
-  const saveRecipients = async (newRecipients: Recipient[]) => {
-    localStorage.setItem('gowa_recipients', JSON.stringify(newRecipients));
-    setRecipients(newRecipients);
-    
-    // Sync to server for auto-notification
-    try {
-      const serverFormat = newRecipients.map(r => ({
-        id: r.id,
-        name: r.name,
-        phone: r.phoneNumber,
-        enabled: true,
-        createdAt: new Date(r.addedAt).toISOString()
-      }));
-      
-      const res = await fetch(`${getProxyApiUrl()}/api/recipients/sync`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipients: serverFormat })
-      });
-      
-      if (res.ok) {
-        console.log('✅ Recipients synced to server for auto-notification');
-      }
-    } catch (e) {
-      console.warn('Failed to sync recipients to server:', e);
-    }
-  };
-
   // Login with QR Code
   async function handleQRLogin() {
     setError(null);
@@ -435,8 +406,8 @@ export default function WhatsAppIntegration() {
     }
   }
 
-  // Add recipient
-  function handleAddRecipient() {
+  // Add recipient - directly to backend server
+  async function handleAddRecipient() {
     if (!newRecipient.phone) {
       setError('Masukkan nomor WhatsApp!');
       return;
@@ -448,25 +419,76 @@ export default function WhatsAppIntegration() {
       return;
     }
     
-    const recipient: Recipient = {
-      id: Date.now().toString(),
-      phoneNumber: cleanPhone,
-      name: newRecipient.name || cleanPhone,
-      addedAt: Date.now(),
-    };
-    
-    const updated = [...recipients, recipient];
-    saveRecipients(updated);
-    setNewRecipient({ phone: '', name: '' });
-    setShowAddRecipient(false);
-    setSuccess(`✅ Penerima ${recipient.name} ditambahkan`);
+    setLoading(true);
+    try {
+      // Add directly to backend server
+      const res = await fetch(`${getProxyApiUrl()}/api/recipients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newRecipient.name || cleanPhone,
+          phone: cleanPhone,
+          enabled: true
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        // Add to local state
+        const recipient: Recipient = {
+          id: data.recipient?.id || Date.now().toString(),
+          phoneNumber: cleanPhone,
+          name: newRecipient.name || cleanPhone,
+          addedAt: Date.now(),
+        };
+        
+        const updated = [...recipients, recipient];
+        setRecipients(updated);
+        localStorage.setItem('gowa_recipients', JSON.stringify(updated));
+        
+        setNewRecipient({ phone: '', name: '' });
+        setShowAddRecipient(false);
+        setSuccess(`✅ Penerima ${recipient.name} ditambahkan dan tersimpan ke server`);
+      } else {
+        throw new Error(data.error || 'Gagal menambahkan recipient');
+      }
+    } catch (err: any) {
+      console.error('Add recipient error:', err);
+      setError(`Gagal menambahkan: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  // Remove recipient
-  function handleRemoveRecipient(id: string) {
+  // Remove recipient - directly from backend server
+  async function handleRemoveRecipient(id: string) {
     if (!confirm('Hapus penerima ini?')) return;
-    const updated = recipients.filter(r => r.id !== id);
-    saveRecipients(updated);
+    
+    try {
+      // Remove from backend
+      const res = await fetch(`${getProxyApiUrl()}/api/recipients/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (res.ok) {
+        const updated = recipients.filter(r => r.id !== id);
+        setRecipients(updated);
+        localStorage.setItem('gowa_recipients', JSON.stringify(updated));
+        setSuccess('✅ Penerima berhasil dihapus');
+      } else {
+        // Still remove from local if backend fails
+        const updated = recipients.filter(r => r.id !== id);
+        setRecipients(updated);
+        localStorage.setItem('gowa_recipients', JSON.stringify(updated));
+      }
+    } catch (e) {
+      console.warn('Failed to delete from server:', e);
+      // Remove locally anyway
+      const updated = recipients.filter(r => r.id !== id);
+      setRecipients(updated);
+      localStorage.setItem('gowa_recipients', JSON.stringify(updated));
+    }
   }
 
   // Send test message

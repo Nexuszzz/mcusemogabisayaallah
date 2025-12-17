@@ -419,11 +419,11 @@ Status published: online
 
 ```bash
 # Subscribe untuk monitor data ESP32
-mosquitto_sub -h 13.213.57.228 -p 1883 -u zaks -P 'engganngodinginginmcu' -t "lab/zaks/#" -v
+mosquitto_sub -h 3.27.0.139 -p 1883 -u zaks -P 'enggangodinginmcu' -t "lab/zaks/#" -v
 
 # Send command ke ESP32
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P 'engganngodinginginmcu' -t "lab/zaks/event" -m "BUZZER_ON"
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P 'engganngodinginginmcu' -t "lab/zaks/event" -m "THR=2500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P 'enggangodinginmcu' -t "lab/zaks/event" -m "BUZZER_ON"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P 'enggangodinginmcu' -t "lab/zaks/event" -m "THR=2500"
 ```
 
 ## 🐛 Troubleshooting

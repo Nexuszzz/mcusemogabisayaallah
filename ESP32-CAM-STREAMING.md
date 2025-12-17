@@ -305,10 +305,10 @@ import json
 import time
 
 # MQTT Config
-MQTT_BROKER = "13.213.57.228"
+MQTT_BROKER = "3.27.0.139"
 MQTT_PORT = 1883
 MQTT_USER = "zaks"
-MQTT_PASS = "engganngodinginginmcu"
+MQTT_PASS = "enggangodinginmcu"
 MQTT_TOPIC_DETECTION = "lab/zaks/fire-detection"
 
 # ESP32-CAM Stream URL

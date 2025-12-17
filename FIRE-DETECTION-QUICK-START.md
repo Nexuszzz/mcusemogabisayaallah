@@ -197,8 +197,8 @@ ping 10.148.218.219
 ### Problem: "MQTT disconnected"
 **Solution**:
 - ✅ Check internet connection
-- ✅ Broker: 13.213.57.228:1883 harus accessible
-- ✅ Credentials: zaks / engganngodinginginmcu
+- ✅ Broker: 3.27.0.139:1883 harus accessible
+- ✅ Credentials: zaks / enggangodinginmcu
 
 ### Problem: "Gallery tidak update"
 **Solution**:
@@ -285,9 +285,9 @@ SEND_TO_WEB = True             # Enable/disable web upload
 SNAPSHOT_ON_DETECTION = True   # Save snapshot on fire detection
 
 # MQTT
-MQTT_BROKER = "13.213.57.228"
+MQTT_BROKER = "3.27.0.139"
 MQTT_USER = "zaks"
-MQTT_PASSWORD = "engganngodinginginmcu"
+MQTT_PASSWORD = "enggangodinginmcu"
 
 # Web API
 WEB_API_URL = "http://localhost:8080/api/fire-detection"

@@ -216,7 +216,7 @@ Setelah testing, pastikan:
 
 **Solusi:**
 1. Check internet connection
-2. Verify MQTT broker accessible: `13.213.57.228:1883`
+2. Verify MQTT broker accessible: `3.27.0.139:1883`
 3. Check credentials correct in script
 
 ---

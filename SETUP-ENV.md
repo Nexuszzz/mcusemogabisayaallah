@@ -20,7 +20,7 @@ MQTT_PASSWORD=your-secure-password-here
 
 **To:**
 ```env
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 ```
 
 ### **Step 3: Done! Start servers**
@@ -47,10 +47,10 @@ WA_BROWSER_TYPE=Chrome
 WA_BROWSER_VERSION=110.0.0
 
 # MQTT Broker (Direct TCP)
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_PORT=1883
 MQTT_USER=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 
 # MQTT Topics
 MQTT_TOPIC_EVENT=lab/zaks/event
@@ -68,7 +68,7 @@ LOG_LEVEL=silent
 # MQTT Proxy (WebSocket - for frontend)
 VITE_MQTT_URL=ws://localhost:8080/ws
 VITE_MQTT_USERNAME=zaks
-VITE_MQTT_PASSWORD=engganngodinginginmcu
+VITE_MQTT_PASSWORD=enggangodinginmcu
 
 # MQTT Topics
 VITE_TOPIC_EVENT=lab/zaks/event

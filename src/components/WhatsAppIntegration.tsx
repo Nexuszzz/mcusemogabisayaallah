@@ -41,7 +41,8 @@ interface Recipient {
   addedAt: number;
 }
 
-const API_BASE = import.meta.env.VITE_WA_API_URL || 'http://localhost:3001/api/whatsapp';
+import { WA_API_URL } from '../config/api.config';
+const API_BASE = WA_API_URL;
 
 export default function WhatsAppIntegration() {
   const { preferences } = useTelemetryStore();

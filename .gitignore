@@ -38,3 +38,5 @@ python_scripts/.env.production
 
 # Keep only .env.example files
 !**/.env.example
+
+.vercel

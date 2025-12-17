@@ -10,13 +10,13 @@ pause
 
 echo.
 echo Clearing lab/zaks/event...
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -r -n
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -r -n
 
 echo Clearing lab/zaks/alert...
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/alert" -r -n
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/alert" -r -n
 
 echo Clearing lab/zaks/log...
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/log" -r -n
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/log" -r -n
 
 echo.
 echo ✅ Retained messages cleared!

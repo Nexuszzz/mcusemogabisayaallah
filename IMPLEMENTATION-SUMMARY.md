@@ -345,7 +345,7 @@ Fire Detection → WhatsApp Message → ✅ Detailed info dengan foto
 - **Icons:** lucide-react
 
 ### Integration Points
-1. **MQTT Broker** (`13.213.57.228:1883`)
+1. **MQTT Broker** (`3.27.0.139:1883`)
    - Topic: `lab/zaks/fire_photo`
    - QoS: 1 (at least once)
 

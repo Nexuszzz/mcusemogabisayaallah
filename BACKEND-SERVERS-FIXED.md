@@ -14,7 +14,7 @@ Dokumen ini menjelaskan perbaikan lengkap untuk **Proxy Server** dan **WhatsApp 
 Error: connect ECONNREFUSED 127.0.0.1:1883
 ```
 
-**Penyebab**: File `.env` di folder `proxy-server` kosong, sehingga server mencoba koneksi ke `localhost:1883` padahal MQTT broker ada di remote server `13.213.57.228:1883`.
+**Penyebab**: File `.env` di folder `proxy-server` kosong, sehingga server mencoba koneksi ke `localhost:1883` padahal MQTT broker ada di remote server `3.27.0.139:1883`.
 
 ### ✅ Solusi yang Diterapkan
 
@@ -26,10 +26,10 @@ Error: connect ECONNREFUSED 127.0.0.1:1883
 PORT=8080
 
 # MQTT Broker (TCP)
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_PORT=1883
 MQTT_USERNAME=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 
 # Topics to relay - lab/zaks/#
 TOPIC_EVENT=lab/zaks/event
@@ -105,10 +105,10 @@ WA_BROWSER_TYPE=Chrome
 WA_BROWSER_VERSION=110.0.0
 
 # MQTT Broker Configuration (Direct TCP)
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_PORT=1883
 MQTT_USER=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 
 # MQTT Topics
 MQTT_TOPIC_EVENT=lab/zaks/event
@@ -321,8 +321,8 @@ curl -X POST http://localhost:3001/api/whatsapp/test-send \
 ### 3. Trigger Fire Alert via MQTT
 ```bash
 # Publish fire alert to MQTT
-mosquitto_pub -h 13.213.57.228 -p 1883 \
-  -u zaks -P engganngodinginginmcu \
+mosquitto_pub -h 3.27.0.139 -p 1883 \
+  -u zaks -P enggangodinginmcu \
   -t lab/zaks/alert \
   -m '{"alert":true,"conf":0.95,"level":"HIGH","temperature":45,"humidity":60,"gas":300,"ts":1698768000,"gemini":true}'
 ```
@@ -406,7 +406,7 @@ curl -X POST http://localhost:3001/api/whatsapp/delete-session
 **Solusi**:
 ```bash
 # Test MQTT connection directly
-mosquitto_sub -h 13.213.57.228 -p 1883 -u zaks -P engganngodinginginmcu -t lab/zaks/#
+mosquitto_sub -h 3.27.0.139 -p 1883 -u zaks -P enggangodinginmcu -t lab/zaks/#
 
 # Check .env file has correct credentials
 ```

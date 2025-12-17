@@ -55,7 +55,7 @@ const MQTT_CONFIG: MqttConfig = {
 # Proxy server handles TCP to WebSocket conversion
 VITE_MQTT_URL=ws://localhost:8080/ws
 VITE_MQTT_USERNAME=zaks
-VITE_MQTT_PASSWORD=engganngodinginginmcu
+VITE_MQTT_PASSWORD=enggangodinginmcu
 
 # MQTT Topics
 VITE_TOPIC_EVENT=lab/zaks/event
@@ -166,7 +166,7 @@ ESP32 Device
     ↓
     ↓ (MQTT TCP - port 1883)
     ↓
-MQTT Broker (13.213.57.228:1883)
+MQTT Broker (3.27.0.139:1883)
     ↓
     ↓ (Subscribe: lab/zaks/#)
     ↓
@@ -253,7 +253,7 @@ console.log('Latest Data:', store.data[store.data.length - 1])
 
 ```bash
 # Subscribe to all topics from terminal:
-mosquitto_sub -h 13.213.57.228 -p 1883 -u zaks -P engganngodinginginmcu -t "lab/zaks/#" -v
+mosquitto_sub -h 3.27.0.139 -p 1883 -u zaks -P enggangodinginmcu -t "lab/zaks/#" -v
 ```
 
 ---
@@ -469,7 +469,7 @@ Jika masih ada masalah:
 
 5. **Test MQTT directly**:
    ```bash
-   mosquitto_sub -h 13.213.57.228 -p 1883 -u zaks -P engganngodinginginmcu -t "lab/zaks/#"
+   mosquitto_sub -h 3.27.0.139 -p 1883 -u zaks -P enggangodinginmcu -t "lab/zaks/#"
    ```
 
 **Semua sistem sekarang berfungsi dengan sempurna!** 🎉✅

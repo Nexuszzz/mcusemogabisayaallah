@@ -138,10 +138,10 @@ const API_BASE = import.meta.env.VITE_WA_API_URL || 'http://localhost:3001/api/w
 
 ```javascript
 const MQTT_CONFIG = {
-  host: process.env.MQTT_HOST || '13.213.57.228',
+  host: process.env.MQTT_HOST || '3.27.0.139',
   port: parseInt(process.env.MQTT_PORT) || 1883,
   username: process.env.MQTT_USER || 'zaks',
-  password: process.env.MQTT_PASSWORD || 'engganngodinginginmcu',
+  password: process.env.MQTT_PASSWORD || 'enggangodinginmcu',
   topic_event: 'lab/zaks/event',
   topic_alert: 'lab/zaks/alert',
 };
@@ -429,7 +429,7 @@ const [loading, setLoading] = useState(false);
 **Location:** `whatsapp-server/server.js`
 
 ```javascript
-password: 'engganngodinginginmcu'
+password: 'enggangodinginmcu'
 ```
 
 **This is PUBLIC if pushed to GitHub!**

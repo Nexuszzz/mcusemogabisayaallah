@@ -103,7 +103,7 @@ FireNotification component (subscribed)
 .\test-fire-event.bat
 
 # Manual
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
 ```
 
 ### **Expected Result:**
@@ -187,7 +187,7 @@ Alarm Status: NORMAL    (or ACTIVE with red alert)
 ```env
 VITE_MQTT_URL=ws://localhost:8080/ws
 VITE_MQTT_USERNAME=zaks
-VITE_MQTT_PASSWORD=engganngodinginginmcu
+VITE_MQTT_PASSWORD=enggangodinginmcu
 VITE_TOPIC_EVENT=lab/zaks/event
 VITE_TOPIC_LOG=lab/zaks/log
 VITE_TOPIC_STATUS=lab/zaks/status

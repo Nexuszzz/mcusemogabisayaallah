@@ -30,35 +30,35 @@ goto menu
 :buzzer_on
 echo.
 echo Sending: BUZZER_ON
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_ON"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_ON"
 echo ✅ Command sent!
 goto menu
 
 :buzzer_off
 echo.
 echo Sending: BUZZER_OFF
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_OFF"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_OFF"
 echo ✅ Command sent!
 goto menu
 
 :thr_1500
 echo.
 echo Sending: THR=1500
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=1500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=1500"
 echo ✅ Threshold set to 1500
 goto menu
 
 :thr_2500
 echo.
 echo Sending: THR=2500
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=2500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=2500"
 echo ✅ Threshold set to 2500
 goto menu
 
 :thr_3500
 echo.
 echo Sending: THR=3500
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=3500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=3500"
 echo ✅ Threshold set to 3500
 goto menu
 

@@ -297,9 +297,9 @@ Harus menampilkan foto.
 
 **Check MQTT broker:**
 ```
-Broker: 13.213.57.228:1883
+Broker: 3.27.0.139:1883
 User: zaks
-Pass: engganngodinginginmcu
+Pass: enggangodinginmcu
 ```
 
 **Solusi:**

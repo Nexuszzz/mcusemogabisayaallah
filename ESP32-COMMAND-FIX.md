@@ -149,13 +149,13 @@ bool fire = flameTrig || (gasAnalog > GAS_THRESHOLD) || forceAlarm;
 ```bash
 # Manual test dengan mosquitto_pub
 # 1. Buzzer ON
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_ON"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_ON"
 
 # 2. Buzzer OFF
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_OFF"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "BUZZER_OFF"
 
 # 3. Set threshold
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=2500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=2500"
 ```
 
 ### **Interactive Test:**
@@ -165,7 +165,7 @@ mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "ni
 
 ### **Monitor ESP32 Response:**
 ```bash
-mosquitto_sub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/#" -v
+mosquitto_sub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/#" -v
 ```
 
 ---

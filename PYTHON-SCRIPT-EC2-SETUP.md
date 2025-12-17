@@ -109,10 +109,10 @@ ESP32_CAM_STREAM=http://YOUR_HOME_PUBLIC_IP:8080/stream
 # Atau jika pakai ngrok: https://abcd1234.ngrok.io/stream
 
 # MQTT Configuration
-MQTT_BROKER=13.213.57.228
+MQTT_BROKER=3.27.0.139
 MQTT_PORT=1883
 MQTT_USER=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 
 # Model Path di EC2
 MODEL_PATH=/home/ubuntu/sudahtapibelum/python_scripts/fire_yolov8s_ultra_best.pt

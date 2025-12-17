@@ -3,10 +3,10 @@ echo Setting up Voice Call Server .env file...
 (
 echo VOICE_CALL_PORT=3002
 echo.
-echo MQTT_HOST=13.213.57.228
+echo MQTT_HOST=3.27.0.139
 echo MQTT_PORT=1883
 echo MQTT_USER=zaks
-echo MQTT_PASSWORD=engganngodinginginmcu
+echo MQTT_PASSWORD=enggangodinginmcu
 echo.
 echo ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 echo.

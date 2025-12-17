@@ -131,7 +131,7 @@ Jika notifikasi muncul tanpa api:
 
 3. **Verify MQTT topic:**
    ```bash
-   mosquitto_sub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -v
+   mosquitto_sub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -v
    ```
 
 ---
@@ -149,7 +149,7 @@ Jika notifikasi muncul tanpa api:
 
 **Test Command:**
 ```bash
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
 ```
 
 ---
@@ -164,7 +164,7 @@ mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "la
 
 **Test:**
 ```bash
-for /L %i in (1,1,5) do @(mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}" & timeout /t 0 /nobreak > nul)
+for /L %i in (1,1,5) do @(mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}" & timeout /t 0 /nobreak > nul)
 ```
 
 ---
@@ -179,9 +179,9 @@ for /L %i in (1,1,5) do @(mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "eng
 
 **Test:**
 ```bash
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
 timeout /t 4
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -m "{\"event\":\"flame_on\"}"
 ```
 
 ---
@@ -238,7 +238,7 @@ prevFlame = flameTrig;
 2. **Old event in MQTT retained**
    - Clear retained messages:
      ```bash
-     mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -r -n
+     mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -r -n
      ```
 
 3. **Network replay**
@@ -258,7 +258,7 @@ prevFlame = flameTrig;
 
 2. **MQTT subscriber:**
    ```bash
-   mosquitto_sub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/event" -v
+   mosquitto_sub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/event" -v
    ```
 
 3. **Browser console:**

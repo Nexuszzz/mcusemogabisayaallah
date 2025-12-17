@@ -154,10 +154,10 @@ Edit `D:\zakaiot\config_yolov10.json` untuk mengatur MQTT:
 ```json
 {
   "mqtt": {
-    "host": "13.213.57.228",
+    "host": "3.27.0.139",
     "port": 1883,
     "user": "zaks",
-    "password": "engganngodinginginmcu",
+    "password": "enggangodinginmcu",
     "topic_alert": "lab/zaks/alert",
     "topic_event": "lab/zaks/event"
   }

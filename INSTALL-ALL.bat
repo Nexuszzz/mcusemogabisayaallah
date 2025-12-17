@@ -121,7 +121,7 @@ if not exist .env (
             echo # MQTT Proxy Configuration
             echo VITE_MQTT_URL=ws://localhost:8080/ws
             echo VITE_MQTT_USERNAME=zaks
-            echo VITE_MQTT_PASSWORD=engganngodinginginmcu
+            echo VITE_MQTT_PASSWORD=enggangodinginmcu
             echo.
             echo # MQTT Topics
             echo VITE_TOPIC_EVENT=lab/zaks/event
@@ -153,10 +153,10 @@ if not exist .env (
     ) else (
         (
             echo # MQTT Broker Configuration
-            echo MQTT_HOST=13.213.57.228
+            echo MQTT_HOST=3.27.0.139
             echo MQTT_PORT=1883
             echo MQTT_USERNAME=zaks
-            echo MQTT_PASSWORD=engganngodinginginmcu
+            echo MQTT_PASSWORD=enggangodinginmcu
             echo.
             echo # Proxy Server Port
             echo PROXY_PORT=8080
@@ -197,7 +197,7 @@ if not exist .env (
             echo WA_BROWSER_VERSION=110.0.0
             echo.
             echo # MQTT Configuration
-            echo MQTT_HOST=13.213.57.228
+            echo MQTT_HOST=3.27.0.139
             echo MQTT_PORT=1883
             echo MQTT_USER=zaks
             echo MQTT_PASSWORD=your-password-here
@@ -237,7 +237,7 @@ if not exist .env (
             echo VOICE_CALL_PORT=3002
             echo.
             echo # MQTT Configuration
-            echo MQTT_HOST=13.213.57.228
+            echo MQTT_HOST=3.27.0.139
             echo MQTT_PORT=1883
             echo MQTT_USER=zaks
             echo MQTT_PASSWORD=your-password-here
@@ -299,7 +299,7 @@ echo    - Edit whatsapp-server\.env (update MQTT password)
 echo    - Edit voice-call-server\.env (add Twilio credentials if needed)
 echo.
 echo 2. VERIFY MQTT BROKER:
-echo    - Ensure MQTT broker at 13.213.57.228:1883 is accessible
+echo    - Ensure MQTT broker at 3.27.0.139:1883 is accessible
 echo    - Or change to localhost if using local Mosquitto
 echo.
 echo 3. START SERVICES:

@@ -79,42 +79,62 @@ export default function Login() {
     setIsLoading(true)
 
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register'
-      const body = mode === 'login' 
-        ? { username: formData.username, password: formData.password }
-        : { 
-            fullname: formData.fullname,
-            username: formData.username,
-            email: formData.email,
-            password: formData.password
+      // For demo/static hosting: use hardcoded credentials
+      if (mode === 'login') {
+        // Check if credentials match
+        if (formData.username === 'admin' && formData.password === 'admin123') {
+          // Success! Set mock token and user
+          const mockToken = 'demo-token-' + Date.now()
+          const mockUser = {
+            id: '1',
+            username: 'admin',
+            fullname: 'Administrator',
+            email: 'admin@fireforce.com',
+            role: 'admin'
           }
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        if (mode === 'login') {
-          localStorage.setItem('fireforce_token', data.token)
-          localStorage.setItem('fireforce_user', JSON.stringify(data.user))
+          
+          localStorage.setItem('authToken', mockToken)
+          localStorage.setItem('fireforce_token', mockToken)
+          localStorage.setItem('fireforce_user', JSON.stringify(mockUser))
+          
           setMessage({ type: 'success', text: '🔥 Login successful! Redirecting...' })
           setTimeout(() => navigate('/'), 1500)
         } else {
-          setMessage({ type: 'success', text: '🔥 Account created! You can now login.' })
-          setTimeout(() => {
-            setMode('login')
-            setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }))
-          }, 2000)
+          setMessage({ type: 'error', text: 'Invalid username or password' })
+          setIsLoading(false)
+          return
         }
       } else {
-        setMessage({ type: 'error', text: data.error || 'An error occurred' })
+        // Register mode - for demo, just save to localStorage
+        const users = JSON.parse(localStorage.getItem('demo_users') || '[]')
+        
+        // Check if username exists
+        if (users.find((u: any) => u.username === formData.username)) {
+          setMessage({ type: 'error', text: 'Username already exists' })
+          setIsLoading(false)
+          return
+        }
+        
+        // Add new user
+        users.push({
+          id: Date.now().toString(),
+          fullname: formData.fullname,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password, // In real app, would be hashed
+          role: 'user'
+        })
+        
+        localStorage.setItem('demo_users', JSON.stringify(users))
+        
+        setMessage({ type: 'success', text: '🔥 Account created! You can now login.' })
+        setTimeout(() => {
+          setMode('login')
+          setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }))
+        }, 2000)
       }
     } catch {
-      setMessage({ type: 'error', text: 'Connection error. Please try again.' })
+      setMessage({ type: 'error', text: 'An error occurred. Please try again.' })
     } finally {
       setIsLoading(false)
     }

@@ -142,10 +142,10 @@ ESP32_CAM_IP=10.148.218.219
 GOOGLE_API_KEY=AIzaSyBFSMHncnK-G9OxjPE90H7wnYGkpGOcdEw
 
 # MQTT (optional, defaults provided)
-MQTT_BROKER=13.213.57.228
+MQTT_BROKER=3.27.0.139
 MQTT_PORT=1883
 MQTT_USER=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 ```
 
 ### **Script Configuration (edit in file)**
@@ -190,7 +190,7 @@ PROCESS_EVERY_N_FRAMES = 2
 ✅ Gemini gemini-2.0-flash ready!
 📡 Connecting to WebSocket: ws://localhost:8080/ws
 ✅ WebSocket connected!
-📡 Connecting to MQTT broker: 13.213.57.228:1883
+📡 Connecting to MQTT broker: 3.27.0.139:1883
 ✅ MQTT connected!
 📹 Auto-recording enabled: 30s clips
 📁 Recording directory: D:/fire_recordings

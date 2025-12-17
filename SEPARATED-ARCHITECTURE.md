@@ -319,7 +319,7 @@ Easy to debug!
 ### WhatsApp Server (.env):
 ```env
 WA_PORT=3001
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_USER=zaks
 MQTT_PASSWORD=...
 # NO Twilio config!
@@ -328,7 +328,7 @@ MQTT_PASSWORD=...
 ### Voice Call Server (.env):
 ```env
 VOICE_CALL_PORT=3002
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_USER=zaks
 MQTT_PASSWORD=...
 TWILIO_ACCOUNT_SID=...

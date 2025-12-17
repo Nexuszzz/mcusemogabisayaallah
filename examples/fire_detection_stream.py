@@ -17,10 +17,10 @@ import os
 STREAM_URL = "http://10.75.111.108:81/stream"  # Update with your ESP32-CAM IP
 
 # MQTT Config
-MQTT_BROKER = "13.213.57.228"
+MQTT_BROKER = "3.27.0.139"
 MQTT_PORT = 1883
 MQTT_USER = "zaks"
-MQTT_PASS = "engganngodinginginmcu"
+MQTT_PASS = "enggangodinginmcu"
 MQTT_TOPIC_DETECTION = "lab/zaks/fire-detection"
 MQTT_TOPIC_ALERT = "lab/zaks/alert"
 MQTT_TOPIC_EVENT = "lab/zaks/event"

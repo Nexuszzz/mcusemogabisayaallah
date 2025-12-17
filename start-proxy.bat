@@ -3,7 +3,7 @@ echo ========================================
 echo Starting MQTT Proxy Server
 echo ========================================
 echo.
-echo Connecting to: 13.213.57.228:1883
+echo Connecting to: 3.27.0.139:1883
 echo WebSocket endpoint: ws://localhost:8080/ws
 echo.
 echo Press Ctrl+C to stop

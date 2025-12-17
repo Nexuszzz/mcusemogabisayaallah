@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Flame, X, CheckCircle, AlertTriangle, Clock, Camera, Zap, Brain, Eye } from 'lucide-react'
 import type { FireDetectionData } from '../types/telemetry'
+import { API_BASE_URL } from '../config/api.config'
+
+const API_BASE = API_BASE_URL;
 
 interface FireDetectionGalleryProps {
   maxItems?: number
@@ -24,7 +27,7 @@ export default function FireDetectionGallery({ maxItems = 20 }: FireDetectionGal
 
   const fetchDetections = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/fire-detections?limit=${maxItems}`)
+      const response = await fetch(`${API_BASE}/api/fire-detections?limit=${maxItems}`)
       const data = await response.json()
       
       if (data.success) {
@@ -44,7 +47,7 @@ export default function FireDetectionGallery({ maxItems = 20 }: FireDetectionGal
 
   const updateDetectionStatus = async (id: string, status: 'resolved' | 'false_positive') => {
     try {
-      const response = await fetch(`http://localhost:8080/api/fire-detection/${id}`, {
+      const response = await fetch(`${API_BASE}/api/fire-detection/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
@@ -66,7 +69,7 @@ export default function FireDetectionGallery({ maxItems = 20 }: FireDetectionGal
 
   const deleteDetection = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/fire-detection/${id}`, {
+      const response = await fetch(`${API_BASE}/api/fire-detection/${id}`, {
         method: 'DELETE'
       })
       
@@ -184,7 +187,7 @@ export default function FireDetectionGallery({ maxItems = 20 }: FireDetectionGal
             <div className="aspect-video relative overflow-hidden bg-gray-900">
               {det.snapshotUrl ? (
                 <img
-                  src={`http://localhost:8080${det.snapshotUrl}`}
+                  src={`${API_BASE}${det.snapshotUrl}`}
                   alt="Fire detection"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
@@ -271,7 +274,7 @@ export default function FireDetectionGallery({ maxItems = 20 }: FireDetectionGal
               <div className="mb-6 rounded-lg overflow-hidden bg-gray-900">
                 {selectedDetection.snapshotUrl ? (
                   <img
-                    src={`http://localhost:8080${selectedDetection.snapshotUrl}`}
+                    src={`${API_BASE}${selectedDetection.snapshotUrl}`}
                     alt="Fire detection"
                     className="w-full"
                   />

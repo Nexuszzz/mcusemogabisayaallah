@@ -6,7 +6,7 @@
 - ✅ npm or yarn
 - ✅ WhatsApp account (personal)
 - ✅ Active internet connection
-- ✅ MQTT broker running (13.213.57.228:1883)
+- ✅ MQTT broker running (3.27.0.139:1883)
 
 ---
 
@@ -33,7 +33,7 @@ cd ..
 ### **Step 3: Start MQTT Broker (if not running)**
 ```bash
 # Your MQTT broker should be running
-# Default: 13.213.57.228:1883
+# Default: 3.27.0.139:1883
 ```
 
 ### **Step 4: Start Proxy Server (if needed)**
@@ -155,7 +155,7 @@ Dashboard akan running di **http://localhost:5173**
 
 1. **Trigger Fire Event** (via MQTT)
    ```bash
-   mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P engganngodinginginmcu -t "lab/zaks/alert" -m '{"alert":"flame","conf":0.85,"level":"CRITICAL","temperature":45,"humidity":30,"gas":850,"gemini":true,"ts":1730172330}'
+   mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P enggangodinginmcu -t "lab/zaks/alert" -m '{"alert":"flame","conf":0.85,"level":"CRITICAL","temperature":45,"humidity":30,"gas":850,"gemini":true,"ts":1730172330}'
    ```
 
 2. **Check Recipients WhatsApp**
@@ -209,10 +209,10 @@ File: `whatsapp-server/server.js`
 ```javascript
 // MQTT Config
 const MQTT_CONFIG = {
-  host: '13.213.57.228',
+  host: '3.27.0.139',
   port: 1883,
   username: 'zaks',
-  password: 'engganngodinginginmcu',
+  password: 'enggangodinginmcu',
   topic_event: 'lab/zaks/event',
   topic_alert: 'lab/zaks/alert',
 };
@@ -432,10 +432,10 @@ Monitor:
 Create `.env` in `whatsapp-server/`:
 ```env
 WA_PORT=3001
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_PORT=1883
 MQTT_USER=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 ```
 
 ### **Process Manager (Optional)**

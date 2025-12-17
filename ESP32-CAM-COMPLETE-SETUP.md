@@ -269,10 +269,10 @@ Edit `examples/fire_detection_stream.py`:
 STREAM_URL = "http://192.168.1.100/stream"  # <<< IP ANDA
 
 # Line 15-18: Verify MQTT config
-MQTT_BROKER = "13.213.57.228"
+MQTT_BROKER = "3.27.0.139"
 MQTT_PORT = 1883
 MQTT_USER = "zaks"
-MQTT_PASS = "engganngodinginginmcu"
+MQTT_PASS = "enggangodinginmcu"
 
 # Line 24: Update model path
 MODEL_PATH = "models/fire.pt"
@@ -291,7 +291,7 @@ python fire_detection_stream.py
 🔥 FIRE DETECTION STREAM STARTED
 ============================================================
 📹 Stream: http://192.168.1.100/stream
-📡 MQTT: 13.213.57.228:1883
+📡 MQTT: 3.27.0.139:1883
 🤖 Model: models/fire.pt
 💾 Save: True
 👁️  Preview: True

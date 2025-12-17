@@ -62,10 +62,10 @@ Create `.env` file:
 VOICE_CALL_PORT=3002
 
 # MQTT Configuration
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_PORT=1883
 MQTT_USER=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 
 # Twilio Configuration
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -361,9 +361,9 @@ Content-Type: application/json
 
 2. Verify MQTT credentials in `.env`:
    ```
-   MQTT_HOST=13.213.57.228
+   MQTT_HOST=3.27.0.139
    MQTT_USER=zaks
-   MQTT_PASSWORD=engganngodinginginmcu
+   MQTT_PASSWORD=enggangodinginmcu
    ```
 
 3. Check if proxy server is publishing:

@@ -2,9 +2,10 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useTelemetryStore } from '../store/useTelemetryStore'
 import { parseTelemetryPayload } from '../utils/validation'
 import type { MqttConfig } from '../types/telemetry'
+import { WS_URL } from '../config/api.config'
 
 const MQTT_CONFIG: MqttConfig = {
-  url: import.meta.env.VITE_MQTT_URL || 'ws://localhost:8080/ws',
+  url: import.meta.env.VITE_MQTT_URL || WS_URL,
   username: import.meta.env.VITE_MQTT_USERNAME || '',
   password: import.meta.env.VITE_MQTT_PASSWORD || '',
   topicPub: import.meta.env.VITE_TOPIC_LOG || 'lab/zaks/log',

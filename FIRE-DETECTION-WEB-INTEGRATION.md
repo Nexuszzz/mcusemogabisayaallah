@@ -187,10 +187,10 @@ SEND_TO_WEB = True
 SNAPSHOT_ON_DETECTION = True
 
 # MQTT Configuration
-MQTT_BROKER = "13.213.57.228"
+MQTT_BROKER = "3.27.0.139"
 MQTT_PORT = 1883
 MQTT_USER = "zaks"
-MQTT_PASSWORD = "engganngodinginginmcu"
+MQTT_PASSWORD = "enggangodinginmcu"
 MQTT_TOPIC_ALERT = "lab/zaks/alert"
 
 # Detection Parameters
@@ -205,10 +205,10 @@ ALERT_COOLDOWN = 5.0  # seconds
 PORT=8080
 
 # MQTT Broker
-MQTT_HOST=13.213.57.228
+MQTT_HOST=3.27.0.139
 MQTT_PORT=1883
 MQTT_USERNAME=zaks
-MQTT_PASSWORD=engganngodinginginmcu
+MQTT_PASSWORD=enggangodinginmcu
 
 # Topics
 TOPIC_EVENT=lab/zaks/event
@@ -410,7 +410,7 @@ WEB_API_URL = "https://your-server.com:8080/api/fire-detection"
 Jika ada masalah:
 1. Check console logs (browser F12 + terminal)
 2. Verify all services running
-3. Test MQTT connection: `mqtt-client subscribe -h 13.213.57.228 -t "lab/zaks/#"`
+3. Test MQTT connection: `mqtt-client subscribe -h 3.27.0.139 -t "lab/zaks/#"`
 4. Check file permissions di `proxy-server/uploads/`
 
 ---

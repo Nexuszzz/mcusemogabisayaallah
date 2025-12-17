@@ -8,7 +8,7 @@ echo # IMPORTANT: Connect to PROXY SERVER, not directly to broker
 echo # Proxy server handles TCP to WebSocket conversion
 echo VITE_MQTT_URL=ws://localhost:8080/ws
 echo VITE_MQTT_USERNAME=zaks
-echo VITE_MQTT_PASSWORD=engganngodinginginmcu
+echo VITE_MQTT_PASSWORD=enggangodinginmcu
 echo.
 echo # MQTT Topics
 echo VITE_TOPIC_EVENT=lab/zaks/event

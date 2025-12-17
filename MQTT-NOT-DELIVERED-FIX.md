@@ -53,7 +53,7 @@ Artinya: **MQTT message TIDAK SAMPAI dari Proxy Server ke WhatsApp Server!**
 **Kemungkinan penyebab:**
 
 1. **Proxy Server tidak connected ke MQTT broker**
-   - `.env` configuration: `MQTT_HOST=13.213.57.228` ✅ BENAR
+   - `.env` configuration: `MQTT_HOST=3.27.0.139` ✅ BENAR
    - Tapi runtime mungkin tidak load `.env` dengan benar
    - Atau connection gagal tapi tidak ada error log
 
@@ -63,7 +63,7 @@ Artinya: **MQTT message TIDAK SAMPAI dari Proxy Server ke WhatsApp Server!**
    - Tidak ada log "✅ Fire photo published to MQTT" di console
 
 3. **Network/Firewall blocking MQTT**
-   - MQTT broker: `13.213.57.228:1883`
+   - MQTT broker: `3.27.0.139:1883`
    - Mungkin firewall block outgoing connection
    - WhatsApp server bisa connect, kenapa proxy tidak?
 
@@ -292,8 +292,8 @@ Nyalakan lighter/candle, arahkan ke kamera
 
 **Check:**
 1. Apakah ada log "Connected to MQTT broker"?
-2. Apakah MQTT_HOST correct di `.env`? (`13.213.57.228`)
-3. Test MQTT connection: `ping 13.213.57.228`
+2. Apakah MQTT_HOST correct di `.env`? (`3.27.0.139`)
+3. Test MQTT connection: `ping 3.27.0.139`
 
 **Solution:**
 - Restart proxy server

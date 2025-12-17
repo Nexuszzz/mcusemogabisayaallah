@@ -44,7 +44,7 @@ goto menu
 :thr_1500
 echo.
 echo Setting threshold to 1500 (Low sensitivity)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=1500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=1500"
 echo ✅ Threshold set to 1500
 echo Dashboard will show DANGER if gas >= 1500
 goto menu
@@ -52,7 +52,7 @@ goto menu
 :thr_2500
 echo.
 echo Setting threshold to 2500 (Medium sensitivity)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=2500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=2500"
 echo ✅ Threshold set to 2500
 echo Dashboard will show DANGER if gas >= 2500
 goto menu
@@ -60,7 +60,7 @@ goto menu
 :thr_3500
 echo.
 echo Setting threshold to 3500 (Default - Recommended)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=3500"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=3500"
 echo ✅ Threshold set to 3500
 echo Dashboard will show DANGER if gas >= 3500
 goto menu
@@ -68,7 +68,7 @@ goto menu
 :thr_4000
 echo.
 echo Setting threshold to 4000 (High sensitivity)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=4000"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=4000"
 echo ✅ Threshold set to 4000
 echo Dashboard will show DANGER if gas >= 4000
 goto menu
@@ -76,7 +76,7 @@ goto menu
 :thr_4095
 echo.
 echo Setting threshold to 4095 (Maximum - Only saturated sensor triggers)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "nimak/deteksi-api/cmd" -m "THR=4095"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "nimak/deteksi-api/cmd" -m "THR=4095"
 echo ✅ Threshold set to 4095
 echo ⚠️ Alert only if sensor completely saturated!
 goto menu
@@ -84,35 +84,35 @@ goto menu
 :sim_500
 echo.
 echo Simulating Normal Air (gasA: 500)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":500,\"gasMv\":600,\"gasD\":false,\"flame\":false,\"alarm\":false}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":500,\"gasMv\":600,\"gasD\":false,\"flame\":false,\"alarm\":false}"
 echo ✅ Sent! Dashboard should show SAFE (green)
 goto menu
 
 :sim_2000
 echo.
 echo Simulating Elevated Gas (gasA: 2000)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":2000,\"gasMv\":2300,\"gasD\":false,\"flame\":false,\"alarm\":false}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":2000,\"gasMv\":2300,\"gasD\":false,\"flame\":false,\"alarm\":false}"
 echo ✅ Sent! Check dashboard alert status
 goto menu
 
 :sim_3000
 echo.
 echo Simulating High Gas (gasA: 3000)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":3000,\"gasMv\":3200,\"gasD\":true,\"flame\":false,\"alarm\":false}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":3000,\"gasMv\":3200,\"gasD\":true,\"flame\":false,\"alarm\":false}"
 echo ✅ Sent! If threshold < 3000, should show DANGER (red)
 goto menu
 
 :sim_4000
 echo.
 echo Simulating Dangerous Gas (gasA: 4000)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":4000,\"gasMv\":3300,\"gasD\":true,\"flame\":false,\"alarm\":true}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":4000,\"gasMv\":3300,\"gasD\":true,\"flame\":false,\"alarm\":true}"
 echo ✅ Sent! Should show DANGER (red)
 goto menu
 
 :sim_4095
 echo.
 echo Simulating Saturated Sensor (gasA: 4095 - MAXIMUM!)
-mosquitto_pub -h 13.213.57.228 -p 1883 -u zaks -P "engganngodinginginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":4095,\"gasMv\":3300,\"gasD\":true,\"flame\":false,\"alarm\":true}"
+mosquitto_pub -h 3.27.0.139 -p 1883 -u zaks -P "enggangodinginmcu" -t "lab/zaks/log" -m "{\"id\":\"TEST123\",\"t\":28.5,\"h\":65.0,\"gasA\":4095,\"gasMv\":3300,\"gasD\":true,\"flame\":false,\"alarm\":true}"
 echo ✅ Sent! Should ALWAYS show DANGER (red)
 echo ⚠️ Note: Actual gas may be HIGHER than sensor can read!
 goto menu

@@ -100,6 +100,8 @@ echo    Port 3001:  WhatsApp Server (Baileys messaging)
 echo    Port 3002:  Voice Call Server (Twilio calls)
 echo    Port 5173:  Dashboard (Frontend)
 echo.
+echo    MQTT Broker: 3.27.0.139:1883 (user: zaks)
+echo.
 echo ================================================================================
 echo Verifying Services...
 echo ================================================================================

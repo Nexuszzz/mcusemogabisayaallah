@@ -24,7 +24,7 @@ Kedua server sudah di-restart otomatis oleh `RESTART_ALL_SERVERS.bat`
 **Status Saat Ini:**
 ```
 ✅ Proxy Server: RUNNING (port 8080)
-✅ MQTT Connection: CONNECTED (13.213.57.228:1883)
+✅ MQTT Connection: CONNECTED (3.27.0.139:1883)
 ⚠️ WhatsApp Server: RUNNING tapi DISCONNECTED
 ```
 
@@ -203,7 +203,7 @@ ADD_RECIPIENT.bat
          ▼
 ┌──────────────────────────┐
 │   MQTT Broker            │
-│   13.213.57.228:1883     │
+│   3.27.0.139:1883     │
 └────────┬─────────────────┘
          │ MQTT Subscribe
          │ topic: lab/zaks/fire_photo

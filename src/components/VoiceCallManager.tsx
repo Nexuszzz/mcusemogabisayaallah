@@ -29,7 +29,8 @@ interface VoiceCallConfig {
   emergencyNumbersCount: number;
 }
 
-const VOICE_CALL_API = import.meta.env.VITE_VOICE_CALL_API_URL || 'http://localhost:3002/api/voice-call';
+import { VOICE_CALL_API_URL } from '../config/api.config';
+const VOICE_CALL_API = VOICE_CALL_API_URL;
 
 interface TestCallResult {
   callSid: string;

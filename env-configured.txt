@@ -12,11 +12,11 @@ VITE_MQTT_URL=ws://localhost:8080/ws
 # ===== OPTION 2: If broker has WebSocket support =====
 # Try common WebSocket ports: 9001, 8083, or 8080
 # Uncomment and test:
-# VITE_MQTT_URL=ws://13.213.57.228:9001/mqtt
+# VITE_MQTT_URL=ws://3.27.0.139:9001/mqtt
 
 # MQTT Authentication
 VITE_MQTT_USERNAME=zaks
-VITE_MQTT_PASSWORD=engganngodinginginmcu
+VITE_MQTT_PASSWORD=enggangodinginmcu
 
 # MQTT Topics - lab/zaks/#
 VITE_TOPIC_EVENT=lab/zaks/event

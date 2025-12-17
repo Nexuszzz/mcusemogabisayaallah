@@ -38,9 +38,26 @@ const app = express();
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'];
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps, curl, or same-origin)
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    // Allow all localhost and 127.0.0.1 origins
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      callback(null, true);
+      return;
+    }
+    // Allow Vercel deployments
+    if (origin.includes('vercel.app')) {
+      callback(null, true);
+      return;
+    }
+    // Check against allowed origins list
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },

@@ -64,16 +64,16 @@ Beberapa broker MQTT memiliki WebSocket listener di port berbeda. Coba test:
 
 ```bash
 # Test WebSocket di port 9001
-wscat -c ws://13.213.57.228:9001/mqtt
+wscat -c ws://3.27.0.139:9001/mqtt
 
 # Atau port 8083
-wscat -c ws://13.213.57.228:8083/mqtt
+wscat -c ws://3.27.0.139:8083/mqtt
 ```
 
 Jika berhasil connect, edit `.env`:
 
 ```env
-VITE_MQTT_URL=ws://13.213.57.228:9001/mqtt
+VITE_MQTT_URL=ws://3.27.0.139:9001/mqtt
 VITE_MQTT_USERNAME=admin
 VITE_MQTT_PASSWORD=Asdcvbjkl1!
 ```
@@ -85,7 +85,7 @@ Lalu langsung `npm run dev` tanpa proxy.
 ## 📋 Kredensial MQTT Anda
 
 ```
-Host: 13.213.57.228
+Host: 3.27.0.139
 Port: 1883 (TCP)
 User: admin
 Pass: Asdcvbjkl1!
@@ -103,14 +103,14 @@ Topics:
 
 ```bash
 # Subscribe untuk monitor data dari ESP32
-mosquitto_sub -h 13.213.57.228 -p 1883 -u admin -P "Asdcvbjkl1!" -t "nimak/deteksi-api/#" -v
+mosquitto_sub -h 3.27.0.139 -p 1883 -u admin -P "Asdcvbjkl1!" -t "nimak/deteksi-api/#" -v
 ```
 
 ### Test publish manual
 
 ```bash
 # Kirim test payload
-mosquitto_pub -h 13.213.57.228 -p 1883 -u admin -P "Asdcvbjkl1!" \
+mosquitto_pub -h 3.27.0.139 -p 1883 -u admin -P "Asdcvbjkl1!" \
   -t "nimak/deteksi-api/telemetry" \
   -m '{"id":"TEST-001","t":28.5,"h":65.0,"gasA":1850,"gasD":0,"alarm":false}'
 ```
@@ -122,7 +122,7 @@ mosquitto_pub -h 13.213.57.228 -p 1883 -u admin -P "Asdcvbjkl1!" \
 Update kode ESP32 Anda dengan kredensial ini:
 
 ```cpp
-const char* MQTT_HOST = "13.213.57.228";
+const char* MQTT_HOST = "3.27.0.139";
 const uint16_t MQTT_PORT = 1883;
 const char* MQTT_USER = "admin";
 const char* MQTT_PASS = "Asdcvbjkl1!";
@@ -143,10 +143,10 @@ Contoh lengkap ada di `docs/ESP32-INTEGRATION.md`
 **Cek**:
 ```bash
 # Ping broker
-ping 13.213.57.228
+ping 3.27.0.139
 
 # Test telnet
-telnet 13.213.57.228 1883
+telnet 3.27.0.139 1883
 ```
 
 **Solusi**:

@@ -1,59 +1,71 @@
 /**
  * API Configuration
  * Automatically detects production vs development environment
+ * 
+ * Production Domains:
+ * - Frontend: https://latom.flx.web.id
+ * - Backend API: https://api.latom.flx.web.id
  */
 
-// Check if running in production (Vercel or other production host)
-const isProduction = 
-  typeof window !== 'undefined' && 
-  (window.location.hostname.includes('vercel.app') ||
-   window.location.hostname.includes('netlify.app') ||
-   (window.location.hostname !== 'localhost' && 
-    window.location.hostname !== '127.0.0.1' &&
-    !window.location.hostname.startsWith('192.168') &&
-    !window.location.hostname.startsWith('10.')));
+// Runtime detection function - called when needed
+const getHostname = () => typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 
-// EC2 Server Configuration
-const EC2_HOST = '3.27.0.139';
-const EC2_PORT = '8080';
-
-// Production URLs (EC2 Server) - ALL services via EC2 proxy
-const PRODUCTION_CONFIG = {
-  API_BASE: `http://${EC2_HOST}:${EC2_PORT}`,
-  WS_URL: `ws://${EC2_HOST}:${EC2_PORT}/ws`,
-  VIDEO_API: `http://${EC2_HOST}:${EC2_PORT}/api/video`,
-  WA_API: `http://${EC2_HOST}:${EC2_PORT}/api/whatsapp`,      // Via EC2 proxy
-  VOICE_CALL_API: `http://${EC2_HOST}:${EC2_PORT}/api/voice-call`, // Via EC2 proxy
+// Check if running in production (not localhost)
+const isProduction = () => {
+  const hostname = getHostname();
+  return hostname !== 'localhost' && hostname !== '127.0.0.1';
 };
 
-// Development URLs (localhost services)
-const DEVELOPMENT_CONFIG = {
-  API_BASE: 'http://localhost:8080',
-  WS_URL: 'ws://localhost:8080/ws',
-  VIDEO_API: 'http://localhost:8080/api/video',
-  WA_API: 'http://localhost:3001/api/whatsapp',      // Direct to local WhatsApp server
-  VOICE_CALL_API: 'http://localhost:3002/api/voice-call', // Direct to local Voice server
+// Check if using domain (for HTTPS)
+const isDomainAccess = () => {
+  const hostname = getHostname();
+  return hostname === 'latom.flx.web.id';
 };
 
-// Export the appropriate config based on environment
-export const API_CONFIG = isProduction ? PRODUCTION_CONFIG : DEVELOPMENT_CONFIG;
+// Dynamic API Domain based on current access
+const getApiDomain = () => isDomainAccess() ? 'api.latom.flx.web.id' : '3.27.0.139:8080';
+const useHttps = () => isDomainAccess();
 
-// Individual exports for convenience
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || API_CONFIG.API_BASE;
-export const WS_URL = import.meta.env.VITE_WS_URL || API_CONFIG.WS_URL;
-export const VIDEO_API_URL = import.meta.env.VITE_VIDEO_API_URL || API_CONFIG.VIDEO_API;
-export const WA_API_URL = import.meta.env.VITE_WA_API_URL || API_CONFIG.WA_API;
-export const VOICE_CALL_API_URL = import.meta.env.VITE_VOICE_CALL_API_URL || API_CONFIG.VOICE_CALL_API;
+// GETTER FUNCTIONS - computed fresh every call
+export const getApiConfig = () => {
+  if (!isProduction()) {
+    return {
+      API_BASE: 'http://localhost:8080',
+      WS_URL: 'ws://localhost:8080/ws',
+      VIDEO_API: 'http://localhost:8080/api/video',
+      WA_API: 'http://localhost:3001/api/whatsapp',
+      VOICE_CALL_API: 'http://localhost:3002/api/voice-call',
+    };
+  }
+  
+  const apiDomain = getApiDomain();
+  const https = useHttps();
+  return {
+    API_BASE: `${https ? 'https' : 'http'}://${apiDomain}`,
+    WS_URL: `${https ? 'wss' : 'ws'}://${apiDomain}/ws`,
+    VIDEO_API: `${https ? 'https' : 'http'}://${apiDomain}/api/video`,
+    WA_API: `${https ? 'https' : 'http'}://${apiDomain}/api/whatsapp`,
+    VOICE_CALL_API: `${https ? 'https' : 'http'}://${apiDomain}/api/voice-call`,
+  };
+};
 
-// Debug logging for both environments
-console.log('🔧 Environment Detection:', {
-  hostname: typeof window !== 'undefined' ? window.location.hostname : 'server-side',
-  isProduction,
-  NODE_ENV: import.meta.env.NODE_ENV,
-  selectedConfig: isProduction ? 'PRODUCTION (EC2)' : 'DEVELOPMENT (localhost)'
-});
+// For backward compatibility - these will be evaluated at runtime
+export const API_CONFIG = getApiConfig();
 
-// Log configuration for debugging
-console.log('🔧 API Config:', API_CONFIG); else {
-  console.log('🚀 API Config (Production):', API_CONFIG);
-}
+// Individual exports - use getters for dynamic values
+export const getWsUrl = () => getApiConfig().WS_URL;
+export const getApiBaseUrl = () => getApiConfig().API_BASE;
+export const getVideoApiUrl = () => getApiConfig().VIDEO_API;
+export const getWaApiUrl = () => getApiConfig().WA_API;
+export const getVoiceCallApiUrl = () => getApiConfig().VOICE_CALL_API;
+
+// Static exports (for backward compatibility, but prefer getters)
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || getApiConfig().API_BASE;
+export const WS_URL = import.meta.env.VITE_WS_URL || getApiConfig().WS_URL;
+export const VIDEO_API_URL = import.meta.env.VITE_VIDEO_API_URL || getApiConfig().VIDEO_API;
+export const WA_API_URL = import.meta.env.VITE_WA_API_URL || getApiConfig().WA_API;
+export const VOICE_CALL_API_URL = import.meta.env.VITE_VOICE_CALL_API_URL || getApiConfig().VOICE_CALL_API;
+
+// Log configuration
+console.log(`🌐 Running on: ${getHostname()}`);
+console.log(`📡 API Config:`, getApiConfig());

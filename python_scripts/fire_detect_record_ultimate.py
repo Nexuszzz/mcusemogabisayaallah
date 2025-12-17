@@ -72,7 +72,7 @@ except:
 
 # Import WhatsApp helper
 try:
-    sys.path.insert(0, "D:/zakaiot")  # Add zakaiot to path
+    sys.path.insert(0, "D:/zekk/zakaiot")  # Add zakaiot to path
     from fire_whatsapp_helper import send_fire_photo_to_whatsapp
     WHATSAPP_HELPER_AVAILABLE = True
     print("✅ WhatsApp helper loaded successfully")
@@ -94,13 +94,28 @@ print()
 ESP32_CAM_IP = None  # Will be set later
 STREAM_URL = None  # Will be set later
 
-# Model Configuration
-MODEL_PATH = "D:/zakaiot/fire_yolov8s_ultra_best.pt"
-if not os.path.exists(MODEL_PATH):
-    MODEL_PATH = "D:/zakaiot/fire_training/fire_yolov8n_best.pt"
-    if not os.path.exists(MODEL_PATH):
-        print(f"❌ Model not found! Please check path.")
-        exit(1)
+# Model Configuration - Check multiple paths
+MODEL_PATH = None
+model_paths = [
+    "D:/zekk/zakaiot/fire_yolov8s_ultra_best.pt",
+    "D:/zakaiot/fire_yolov8s_ultra_best.pt",
+    "D:/zekk/zakaiot/fire_training/fire_yolov8n_best.pt",
+    "D:/zakaiot/fire_training/fire_yolov8n_best.pt",
+    os.path.join(os.path.dirname(__file__), "fire_yolov8s_ultra_best.pt"),
+    os.path.join(os.path.dirname(__file__), "fire_yolov8n_best.pt"),
+]
+
+for path in model_paths:
+    if os.path.exists(path):
+        MODEL_PATH = path
+        print(f"✅ Found model at: {path}")
+        break
+
+if MODEL_PATH is None:
+    print(f"❌ Model not found! Checked paths:")
+    for p in model_paths:
+        print(f"   - {p}")
+    exit(1)
 
 # Detection Parameters (Gemini-focused)
 CONF_THRESHOLD = 0.35  # YOLO threshold - balanced for accuracy (was 0.20)
@@ -902,6 +917,66 @@ class MQTTManager:
 # MAIN SYSTEM
 # ============================================================================
 
+def wait_for_mqtt_camera(timeout=30):
+    """Wait for ESP32-CAM IP broadcast via MQTT"""
+    global ESP32_CAM_IP, STREAM_URL
+    
+    if not MQTT_AVAILABLE:
+        return False
+    
+    camera_found = threading.Event()
+    
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print(f"✅ MQTT Connected!")
+            client.subscribe("lab/zaks/esp32cam/ip")
+            print(f"📡 Subscribed to: lab/zaks/esp32cam/ip")
+            print(f"⏳ Waiting for ESP32-CAM broadcast...")
+    
+    def on_message(client, userdata, msg):
+        global ESP32_CAM_IP, STREAM_URL
+        try:
+            payload = json.loads(msg.payload.decode())
+            cam_ip = payload.get("ip")
+            cam_stream = payload.get("stream_url")
+            
+            if cam_ip and cam_stream:
+                print(f"\n📸 Camera Found!")
+                print(f"   ID: {payload.get('id', 'unknown')}")
+                print(f"   IP: {cam_ip}")
+                print(f"   Stream: {cam_stream}")
+                print(f"   WiFi: {payload.get('ssid', 'N/A')} ({payload.get('rssi', 0)} dBm)")
+                
+                ESP32_CAM_IP = cam_ip
+                STREAM_URL = cam_stream
+                camera_found.set()
+        except Exception as e:
+            print(f"⚠️  Parse error: {e}")
+    
+    try:
+        client = mqtt.Client(f"fire_detector_{uuid.uuid4().hex[:8]}")
+        client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+        client.on_connect = on_connect
+        client.on_message = on_message
+        
+        print(f"\n[MQTT] Connecting to {MQTT_BROKER}:{MQTT_PORT}...")
+        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        client.loop_start()
+        
+        if camera_found.wait(timeout=timeout):
+            client.loop_stop()
+            client.disconnect()
+            return True
+        else:
+            print(f"\n⚠️  Timeout - no camera found in {timeout}s")
+            client.loop_stop()
+            client.disconnect()
+            return False
+            
+    except Exception as e:
+        print(f"❌ MQTT error: {e}")
+        return False
+
 def main():
     global ESP32_CAM_IP, STREAM_URL
     
@@ -910,17 +985,42 @@ def main():
     print("ESP32-CAM CONFIGURATION")
     print(f"{'='*80}")
     
-    # Try to get from environment variable first
-    env_ip = os.getenv("ESP32_CAM_IP", "")
+    # Option menu
+    print("\nPilih metode konfigurasi IP:")
+    print("  1. Auto-detect via MQTT (Recommended)")
+    print("  2. Manual input IP")
+    print("  3. Use from .env file")
+    print()
     
-    if env_ip:
-        print(f"Found IP in .env: {env_ip}")
-        use_env = input(f"Use this IP? (Y/n): ").strip().lower()
-        if use_env != 'n':
+    choice = input("Pilihan (1/2/3) [default: 1]: ").strip() or "1"
+    
+    if choice == "1":
+        # Auto-detect via MQTT
+        print(f"\n{'='*60}")
+        print("📡 AUTO-DETECT IP VIA MQTT")
+        print(f"{'='*60}")
+        print("ESP32-CAM akan broadcast IP otomatis setiap 30 detik.")
+        print("Pastikan ESP32-CAM sudah nyala dan connected ke WiFi!")
+        
+        if wait_for_mqtt_camera(timeout=60):
+            print(f"\n✅ Auto-detect berhasil!")
+        else:
+            print("\n⚠️  Auto-detect gagal. Fallback ke manual input...")
+            choice = "2"
+    
+    if choice == "3":
+        # Try from .env
+        env_ip = os.getenv("ESP32_CAM_IP", "")
+        if env_ip:
+            print(f"\n✅ Found IP in .env: {env_ip}")
             ESP32_CAM_IP = env_ip
+            STREAM_URL = f"http://{ESP32_CAM_IP}:81/stream"
+        else:
+            print("\n⚠️  No IP in .env. Fallback ke manual input...")
+            choice = "2"
     
-    # If not set, ask user for input
-    if not ESP32_CAM_IP:
+    if choice == "2" and not ESP32_CAM_IP:
+        # Manual input
         print("\nEnter ESP32-CAM IP address")
         print("Examples:")
         print("  - 10.148.218.219")
@@ -935,14 +1035,21 @@ def main():
                 parts = user_ip.split('.')
                 if len(parts) == 4 and all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
                     ESP32_CAM_IP = user_ip
+                    STREAM_URL = f"http://{ESP32_CAM_IP}:81/stream"
                     break
                 else:
                     print("❌ Invalid IP format! Please enter valid IPv4 address (e.g., 192.168.1.100)")
             else:
                 print("❌ IP address required!")
     
-    # Set stream URL
-    STREAM_URL = f"http://{ESP32_CAM_IP}:81/stream"
+    # Verify we have IP
+    if not ESP32_CAM_IP:
+        print("❌ No ESP32-CAM IP configured! Exiting...")
+        return
+    
+    # Set stream URL if not already set
+    if not STREAM_URL:
+        STREAM_URL = f"http://{ESP32_CAM_IP}:81/stream"
     
     print(f"\n✅ ESP32-CAM IP set to: {ESP32_CAM_IP}")
     print(f"📡 Stream URL: {STREAM_URL}")

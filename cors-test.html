@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - EC2 Backend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🧪 CORS Test - EC2 Backend (3.27.0.139:8080)</h1>
+    <p>Testing connection from: <span id="current-origin"></span></p>
+    
+    <div id="test-results"></div>
+    
+    <button onclick="testHealthEndpoint()">Test /health</button>
+    <button onclick="testStatusEndpoint()">Test /api/status</button>
+    <button onclick="testCORSHeaders()">Test CORS Headers</button>
+    <button onclick="clearResults()">Clear Results</button>
+
+    <script>
+        document.getElementById('current-origin').textContent = window.location.origin;
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            document.getElementById('test-results').appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function testHealthEndpoint() {
+            addResult('Testing /health endpoint...', 'info');
+            
+            try {
+                const response = await fetch('http://3.27.0.139:8080/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ SUCCESS /health: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    addResult(`❌ FAILED /health: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ ERROR /health: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStatusEndpoint() {
+            addResult('Testing /api/status endpoint...', 'info');
+            
+            try {
+                const response = await fetch('http://3.27.0.139:8080/api/status', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ SUCCESS /api/status: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    addResult(`❌ FAILED /api/status: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ ERROR /api/status: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCORSHeaders() {
+            addResult('Testing CORS preflight (OPTIONS)...', 'info');
+            
+            try {
+                const response = await fetch('http://3.27.0.139:8080/api/status', {
+                    method: 'OPTIONS',
+                });
+                
+                addResult(`CORS Headers received:`, 'info');
+                addResult(`- Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}`, 'info');
+                addResult(`- Access-Control-Allow-Methods: ${response.headers.get('Access-Control-Allow-Methods')}`, 'info');
+                addResult(`- Access-Control-Allow-Headers: ${response.headers.get('Access-Control-Allow-Headers')}`, 'info');
+                
+                if (response.ok) {
+                    addResult(`✅ CORS preflight successful: ${response.status}`, 'success');
+                } else {
+                    addResult(`❌ CORS preflight failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ CORS test error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            addResult('🚀 Page loaded, ready for testing', 'info');
+            setTimeout(testHealthEndpoint, 1000);
+        });
+    </script>
+</body>
+</html>

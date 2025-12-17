@@ -29,11 +29,63 @@ const TOPIC_EVENT = process.env.TOPIC_EVENT || 'lab/zaks/event'
 const TOPIC_LOG = process.env.TOPIC_LOG || 'lab/zaks/log'
 const TOPIC_STATUS = process.env.TOPIC_STATUS || 'lab/zaks/status'
 const TOPIC_ALERT = process.env.TOPIC_ALERT || 'lab/zaks/alert'
+const TOPIC_STREAM = process.env.TOPIC_STREAM || 'lab/zaks/stream'
+const TOPIC_ESP32CAM_IP = process.env.TOPIC_ESP32CAM_IP || 'lab/zaks/esp32cam/ip'
 const TOPIC_ALL = 'lab/zaks/#'
 
 // Create Express app
 const app = express()
-app.use(cors())
+
+// COMPREHENSIVE CORS CONFIGURATION for Vercel compatibility
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'https://rtsp-main.vercel.app',
+    'https://rtsp-main-krj3w64cm-nexuszzzs-projects.vercel.app',
+    /.*\.vercel\.app$/,  // Allow all Vercel domains
+    'http://3.27.0.139:3000',
+    'http://3.27.0.139:5173',
+    'http://3.27.0.139:8080',
+    'http://3.27.0.139',
+    'https://latom.flx.web.id',
+    'https://api.latom.flx.web.id',
+    /.*\.flx\.web\.id$/  // Allow all flx.web.id subdomains
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With', 
+    'Content-Type', 
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'X-Access-Token'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+}
+
+app.use(cors(corsOptions))
+
+// Additional CORS headers for preflight
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (corsOptions.origin.some(o => 
+    (typeof o === 'string' && o === origin) || 
+    (o instanceof RegExp && o.test(origin))
+  )) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200)
+    return
+  }
+  next()
+})
+
 app.use(express.json())
 
 // Create uploads directory for fire detection snapshots
@@ -59,6 +111,75 @@ app.use('/api/video', videoRoutes)
 
 // Mount auth routes
 app.use('/api/auth', authRoutes)
+
+// ================================================================================
+// PROXY ROUTES FOR WHATSAPP AND VOICE CALL SERVERS
+// These routes forward requests to separate WhatsApp and Voice Call services
+// ================================================================================
+
+const WHATSAPP_SERVER_URL = process.env.WHATSAPP_SERVER_URL || 'http://localhost:3001'
+const VOICE_CALL_SERVER_URL = process.env.VOICE_CALL_SERVER_URL || 'http://localhost:3002'
+
+// Helper function to proxy requests
+async function proxyRequest(targetUrl, req, res) {
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+    }
+    
+    const fetchOptions = {
+      method: req.method,
+      headers,
+    }
+    
+    if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
+      fetchOptions.body = JSON.stringify(req.body)
+    }
+    
+    const response = await fetch(targetUrl, fetchOptions)
+    const data = await response.json()
+    
+    res.status(response.status).json(data)
+  } catch (error) {
+    console.error(`Proxy error to ${targetUrl}:`, error.message)
+    res.status(503).json({
+      success: false,
+      error: `Service unavailable: ${error.message}`,
+      target: targetUrl
+    })
+  }
+}
+
+// WhatsApp API Proxy Routes
+app.all('/api/whatsapp/*', async (req, res) => {
+  const path = req.path.replace('/api/whatsapp', '')
+  const targetUrl = `${WHATSAPP_SERVER_URL}/api/whatsapp${path}`
+  console.log(`📱 Proxying WhatsApp request: ${req.method} ${targetUrl}`)
+  await proxyRequest(targetUrl, req, res)
+})
+
+// Voice Call API Proxy Routes
+app.all('/api/voice-call/*', async (req, res) => {
+  const path = req.path.replace('/api/voice-call', '')
+  const targetUrl = `${VOICE_CALL_SERVER_URL}/api/voice-call${path}`
+  console.log(`📞 Proxying Voice Call request: ${req.method} ${targetUrl}`)
+  await proxyRequest(targetUrl, req, res)
+})
+
+// Direct status endpoints for backwards compatibility
+app.get('/api/whatsapp/status', async (req, res) => {
+  const targetUrl = `${WHATSAPP_SERVER_URL}/api/whatsapp/status`
+  console.log(`📱 Proxying WhatsApp status request: ${targetUrl}`)
+  await proxyRequest(targetUrl, req, res)
+})
+
+app.get('/api/voice-call/config', async (req, res) => {
+  const targetUrl = `${VOICE_CALL_SERVER_URL}/api/voice-call/config`
+  console.log(`📞 Proxying Voice Call config request: ${targetUrl}`)
+  await proxyRequest(targetUrl, req, res)
+})
+
+// ================================================================================
 
 // Serve static files from public folder (for login page)
 const publicDir = path.join(__dirname, 'public')
@@ -96,6 +217,11 @@ const upload = multer({
 const fireDetectionLogs = []
 const MAX_FIRE_LOGS = 100
 
+// ESP32-CAM livestream data
+const esp32Streams = new Map() // cameraId -> { ip, streamUrl, lastSeen, status }
+const streamClients = new Set() // WebSocket clients for stream
+let currentStreamFrame = null // Current frame buffer for MJPEG stream
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
@@ -104,6 +230,75 @@ app.get('/health', (req, res) => {
     clients: wsClients.size,
     fireDetections: fireDetectionLogs.length,
   })
+})
+
+// API Status endpoint (used by frontend)
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'ok',
+    mqtt: mqttClient?.connected ? 'connected' : 'disconnected',
+    clients: wsClients.size,
+    fireDetections: fireDetectionLogs.length,
+    esp32Cameras: esp32Streams.size,
+    streamClients: streamClients.size,
+    timestamp: new Date().toISOString(),
+    server: 'EC2 Fire Detection API',
+    version: '1.0.0'
+  })
+})
+
+// ESP32-CAM stream endpoints
+app.get('/api/stream/cameras', (req, res) => {
+  const cameras = Array.from(esp32Streams.entries()).map(([id, data]) => ({
+    id,
+    ip: data.ip,
+    streamUrl: data.streamUrl,
+    status: data.status,
+    lastSeen: data.lastSeen
+  }))
+  
+  res.json({
+    success: true,
+    cameras: cameras,
+    count: cameras.length
+  })
+})
+
+// Proxy ESP32-CAM stream
+app.get('/api/stream/:cameraId', async (req, res) => {
+  const { cameraId } = req.params
+  const camera = esp32Streams.get(cameraId)
+  
+  if (!camera) {
+    return res.status(404).json({
+      success: false,
+      error: 'Camera not found'
+    })
+  }
+  
+  try {
+    // Proxy MJPEG stream from ESP32-CAM
+    const response = await fetch(camera.streamUrl)
+    
+    if (!response.ok) {
+      throw new Error(`Stream unavailable: ${response.status}`)
+    }
+    
+    res.setHeader('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+    res.setHeader('Pragma', 'no-cache')
+    res.setHeader('Expires', '0')
+    
+    response.body.pipe(res)
+    
+  } catch (error) {
+    console.error(`Stream proxy error for ${cameraId}:`, error.message)
+    res.status(503).json({
+      success: false,
+      error: 'Stream unavailable',
+      cameraId
+    })
+  }
 })
 
 // Fire Detection API - POST new detection with snapshot
@@ -390,6 +585,57 @@ mqttClient.on('message', (topic, payload) => {
   }
 
   console.log(`📨 Received from MQTT: ${topic}`)
+  
+  // Handle ESP32-CAM IP announcements
+  if (topic === TOPIC_ESP32CAM_IP) {
+    try {
+      const data = JSON.parse(payloadString)
+      const cameraId = data.chipId || data.id || 'esp32cam-default'
+      
+      esp32Streams.set(cameraId, {
+        ip: data.ip,
+        streamUrl: data.stream_url || `http://${data.ip}:81/stream`,
+        lastSeen: Date.now(),
+        status: 'online',
+        ...data
+      })
+      
+      console.log(`📹 ESP32-CAM registered: ${cameraId} -> ${data.ip}`)
+      
+      // Broadcast to stream clients
+      const streamMessage = {
+        type: 'camera-registered',
+        cameraId,
+        data: data,
+        timestamp: new Date().toISOString()
+      }
+      
+      streamClients.forEach(client => {
+        if (client.readyState === 1) {
+          client.send(JSON.stringify(streamMessage))
+        }
+      })
+      
+    } catch (error) {
+      console.error('Error parsing ESP32-CAM IP announcement:', error)
+    }
+  }
+  
+  // Handle stream data if needed
+  if (topic === TOPIC_STREAM) {
+    // Forward stream data to WebSocket clients
+    const streamMessage = {
+      type: 'stream-data',
+      data: payloadString,
+      timestamp: new Date().toISOString()
+    }
+    
+    streamClients.forEach(client => {
+      if (client.readyState === 1) {
+        client.send(JSON.stringify(streamMessage))
+      }
+    })
+  }
   console.log(`   Payload: ${payloadString}`)
   console.log(`   Clients: ${wsClients.size} connected`)
 
@@ -405,14 +651,35 @@ mqttClient.on('message', (topic, payload) => {
 })
 
 // Handle WebSocket connections
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   console.log('🔌 New WebSocket client connected')
-  wsClients.add(ws)
+  
+  // Check if this is a stream client
+  const isStreamClient = req.url?.includes('stream') || false
+  
+  if (isStreamClient) {
+    streamClients.add(ws)
+    console.log('📹 Stream client connected')
+    
+    // Send available cameras
+    const cameras = Array.from(esp32Streams.entries()).map(([id, data]) => ({
+      id, ip: data.ip, streamUrl: data.streamUrl, status: data.status
+    }))
+    
+    ws.send(JSON.stringify({
+      type: 'cameras-list',
+      cameras: cameras,
+      timestamp: new Date().toISOString()
+    }))
+  } else {
+    wsClients.add(ws)
+    console.log('📡 MQTT client connected')
+  }
 
   // Send connection success message
   ws.send(JSON.stringify({
     type: 'connected',
-    message: 'Connected to MQTT proxy',
+    message: isStreamClient ? 'Connected to Stream proxy' : 'Connected to MQTT proxy',
     timestamp: new Date().toISOString(),
   }))
 
@@ -425,6 +692,13 @@ wss.on('connection', (ws) => {
         console.log(`📤 Publishing to MQTT: ${message.topic}`)
         mqttClient.publish(message.topic, message.payload, { qos: 1 })
       }
+      
+      if (message.type === 'subscribe-stream' && message.cameraId) {
+        console.log(`📹 Client subscribing to stream: ${message.cameraId}`)
+        // Mark this client as interested in specific camera stream
+        ws.subscribedCamera = message.cameraId
+      }
+      
     } catch (error) {
       console.error('❌ Error handling WebSocket message:', error)
     }
@@ -434,11 +708,13 @@ wss.on('connection', (ws) => {
   ws.on('close', () => {
     console.log('🔌 WebSocket client disconnected')
     wsClients.delete(ws)
+    streamClients.delete(ws)
   })
 
   ws.on('error', (error) => {
     console.error('❌ WebSocket error:', error)
     wsClients.delete(ws)
+    streamClients.delete(ws)
   })
 })
 

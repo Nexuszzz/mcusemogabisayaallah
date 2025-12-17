@@ -38,7 +38,6 @@ interface ActiveRecording {
 
 import { VIDEO_API_URL, API_BASE_URL } from '../config/api.config';
 const API_BASE = VIDEO_API_URL;
-const SERVER_BASE = API_BASE_URL;
 
 export default function VideoGallery() {
   const [recordings, setRecordings] = useState<Recording[]>([]);
@@ -353,7 +352,7 @@ export default function VideoGallery() {
             {/* Video Thumbnail */}
             <div className="aspect-video bg-gray-900 relative group">
               <video
-                src={`${SERVER_BASE}${recording.path}`}
+                src={`${API_BASE_URL}${recording.path}`}
                 className="w-full h-full object-cover"
                 preload="metadata"
               />
@@ -401,7 +400,7 @@ export default function VideoGallery() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(`${SERVER_BASE}${recording.path}`, '_blank');
+                    window.open(`${API_BASE_URL}${recording.path}`, '_blank');
                   }}
                   className="flex-1 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center justify-center gap-1"
                 >
@@ -467,7 +466,7 @@ export default function VideoGallery() {
             {/* Video Player */}
             <div className="p-6">
               <video
-                src={`${SERVER_BASE}${selectedVideo.path}`}
+                src={`${API_BASE_URL}${selectedVideo.path}`}
                 controls
                 autoPlay
                 className="w-full rounded-lg bg-black"
@@ -504,7 +503,7 @@ export default function VideoGallery() {
               {/* Download Button */}
               <div className="mt-4">
                 <a
-                  href={`${SERVER_BASE}${selectedVideo.path}`}
+                  href={`${API_BASE_URL}${selectedVideo.path}`}
                   download
                   className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                 >

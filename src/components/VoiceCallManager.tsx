@@ -29,8 +29,23 @@ interface VoiceCallConfig {
   emergencyNumbersCount: number;
 }
 
-import { VOICE_CALL_API_URL } from '../config/api.config';
-const VOICE_CALL_API = VOICE_CALL_API_URL;
+// Runtime detection - executed at runtime, not build time
+const getVoiceCallApiRuntime = (): string => {
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  console.log('🎤 VoiceCall hostname:', hostname);
+  
+  if (hostname === 'latom.flx.web.id') {
+    return 'https://api.latom.flx.web.id/api/voice-call';
+  }
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3002/api/voice-call';
+  }
+  // IP access fallback
+  return 'http://3.27.0.139:8080/api/voice-call';
+};
+
+// Use function call to get URL at runtime
+const VOICE_CALL_API = getVoiceCallApiRuntime();
 
 interface TestCallResult {
   callSid: string;

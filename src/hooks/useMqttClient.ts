@@ -2,17 +2,43 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useTelemetryStore } from '../store/useTelemetryStore'
 import { parseTelemetryPayload } from '../utils/validation'
 import type { MqttConfig } from '../types/telemetry'
-import { WS_URL } from '../config/api.config'
 
-const MQTT_CONFIG: MqttConfig = {
-  url: import.meta.env.VITE_MQTT_URL || WS_URL,
-  username: import.meta.env.VITE_MQTT_USERNAME || '',
-  password: import.meta.env.VITE_MQTT_PASSWORD || '',
-  topicPub: import.meta.env.VITE_TOPIC_LOG || 'lab/zaks/log',
-  // Command topic harus sesuai dengan ESP32 subscribe
-  topicCmd: import.meta.env.VITE_TOPIC_CMD || 'nimak/deteksi-api/cmd',
-  topicStatus: import.meta.env.VITE_TOPIC_STATUS || 'lab/zaks/status',
-}
+// Runtime URL detection - must be called at runtime, not build time
+const getWsUrlRuntime = (): string => {
+  if (typeof window === 'undefined') return 'ws://localhost:8080/ws';
+  
+  const hostname = window.location.hostname;
+  console.log('🌐 Current hostname:', hostname);
+  
+  // Development
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    console.log('📍 Mode: Development (localhost)');
+    return 'ws://localhost:8080/ws';
+  }
+  
+  // Production with domain
+  if (hostname === 'latom.flx.web.id') {
+    console.log('📍 Mode: Production (domain)');
+    return 'wss://api.latom.flx.web.id/ws';
+  }
+  
+  // Production with IP (fallback)
+  console.log('📍 Mode: Production (IP fallback)');
+  return 'ws://3.27.0.139:8080/ws';
+};
+
+// Dynamic config - computed fresh each time
+const getMqttConfig = (): MqttConfig => {
+  const wsUrl = getWsUrlRuntime();
+  return {
+    url: wsUrl,
+    username: '',
+    password: '',
+    topicPub: 'lab/zaks/log',
+    topicCmd: 'nimak/deteksi-api/cmd',
+    topicStatus: 'lab/zaks/status',
+  };
+};
 
 export function useMqttClient() {
   const wsRef = useRef<WebSocket | null>(null)
@@ -194,15 +220,16 @@ export function useMqttClient() {
       return
     }
 
+    const config = getMqttConfig()
     setConnectionStatus('connecting')
-    console.log('Connecting to proxy server:', MQTT_CONFIG.url)
+    console.log('Connecting to proxy server:', config.url)
 
     try {
-      const ws = new WebSocket(MQTT_CONFIG.url)
+      const ws = new WebSocket(config.url)
       
       ws.onopen = () => {
         console.log('✅ WebSocket connected to proxy')
-        console.log('📍 Connected to:', MQTT_CONFIG.url)
+        console.log('📍 Connected to:', config.url)
         setConnectionStatus('connected')
         const clientId = `dashboard-${Math.random().toString(16).slice(2, 10)}`
         setClientId(clientId)
@@ -270,7 +297,7 @@ export function useMqttClient() {
   }, [setError])
 
   const sendCommand = useCallback((command: string) => {
-    return publish(MQTT_CONFIG.topicCmd, command)
+    return publish(getMqttConfig().topicCmd, command)
   }, [publish])
 
   const setBuzzer = useCallback((state: boolean) => {
@@ -321,6 +348,6 @@ export function useMqttClient() {
     sendCommand,
     setBuzzer,
     setGasThreshold,
-    config: MQTT_CONFIG,
+    config: getMqttConfig(),
   }
 }

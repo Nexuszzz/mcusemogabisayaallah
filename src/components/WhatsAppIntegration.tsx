@@ -41,8 +41,23 @@ interface Recipient {
   addedAt: number;
 }
 
-import { WA_API_URL } from '../config/api.config';
-const API_BASE = WA_API_URL;
+// Runtime detection - executed at runtime, not build time
+const getWaApiRuntime = (): string => {
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  console.log('📱 WhatsApp API hostname:', hostname);
+  
+  if (hostname === 'latom.flx.web.id') {
+    return 'https://api.latom.flx.web.id/api/whatsapp';
+  }
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3001/api/whatsapp';
+  }
+  // IP access fallback
+  return 'http://3.27.0.139:8080/api/whatsapp';
+};
+
+// Use function call to get URL at runtime
+const API_BASE = getWaApiRuntime();
 
 export default function WhatsAppIntegration() {
   const { preferences } = useTelemetryStore();
